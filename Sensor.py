@@ -1,5 +1,4 @@
 import cv2
-import numpy as np
 import paho.mqtt.client as mqtt
 import logging
 import time
@@ -55,15 +54,21 @@ class SensorMovement:
             #Check if the contours are bigger than 700 else ignore them
             time_2 = time.time()
             # If theres has been movement the last 1 sec mov on
-            if (time_2 - time_1)>1: 
-                time_1 = time.time()
-                for contour in contours:
-                    #finds the coordinates of the countours
-                    (x,y,w,h) = cv2.boundingRect(contour)
+            
+            for contour in contours:
+                #finds the coordinates of the countours
+                (x,y,w,h) = cv2.boundingRect(contour)
+                if (time_2 - time_1)>1: 
+                    time_1 = time.time()
                     if cv2.contourArea(contour)>700:
                         message= "Movement"
                         self.mqtt_client.publish(MQTT_TOPIC_OUTPUT, message)
                         break
+                # del for show rectangles
+                #if cv2.contourArea(contour)>700:
+                #    cv2.rectangle(frame1,(x,y),(x+w,y+h),(0,255,0),2)
+                #    cv2.putText(frame1,"Status:{}".format('Movement'),(10,20),cv2.FONT_HERSHEY_SIMPLEX,
+                #    1, (0,0,255),3)
                         
             #shows the picture
             cv2.imshow("webcam",frame1)
