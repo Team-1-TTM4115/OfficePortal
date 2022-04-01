@@ -17,7 +17,12 @@ class Screen:
         self.windowHeight = self.startup_screen.winfo_reqheight()
 
     def configure_startup_screen(self) -> None:
-        self.startup_screen.title('Magic Mirror: Python Mod')
+        """
+        Configures the startup screen. Can be used to display a screen
+        while we are waiting to connect/load something.
+        :return: None
+        """
+        self.startup_screen.title('Office Portal')
         self.startup_screen.configure(background='black')
         self.startup_screen.overrideredirect(True)
         self.welcome_text.config(text='Hasta La Pasta')
@@ -26,14 +31,21 @@ class Screen:
         positionRight = int(self.startup_screen.winfo_screenwidth() / 2.5 - self.windowWidth / 2)
         positionDown = int(self.startup_screen.winfo_screenheight() / 2 - self.windowHeight / 2)
 
-        # Positions the window in the center of the page.
+        # Positions the window in the center of the page and updates the label.
         self.startup_screen.geometry("+{}+{}".format(positionRight, positionDown))
         self.startup_screen.update()
-        time.sleep(2)  # Waits two seconds so we are able to se the loading screen.
+        # Waits two seconds so we are able to se the loading screen.
+        time.sleep(2)
+        # Removes the startup screen.
         self.startup_screen.destroy()
 
     def setup_main_screen(self) -> None:
-        # Creates the main screen.
+        """
+        Sets up the main screen for the magic mirror. Used
+        to add the different modules to the root screen.
+        :return: None
+        """
+        # Creates and configures the main screen.
         self.root = tk.Tk()
         self.root.title('Mirror')
         self.root.attributes("-fullscreen", True)
@@ -41,11 +53,17 @@ class Screen:
         # Creates the clock object on the main screen.
         clock = Clock(self.root)
         clock.display_time()
+        clock.display_date()
         # Creates the news object on the main screen.
         news_tab = News(self.root)
         news_tab.show_news()
 
     def run(self) -> None:
+        """
+        Runs the program and calls the tkinter mainloop function.
+        Nb: Any code written below the mainloop function will not be executed.
+        :return: None
+        """
         self.configure_startup_screen()
         self.setup_main_screen()
         self.root.mainloop()

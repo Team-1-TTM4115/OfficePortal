@@ -35,7 +35,6 @@ class News:
         :return: None
         """
         self.head_lines = self.api.get_top_headlines(sources='bbc-news')
-        print(self.head_lines)
 
     def show_news(self) -> None:
         """
