@@ -1,127 +1,130 @@
 import tkinter as tk
 from tkinter import *
-
-startupscreen = tk.Tk()
-startupscreen.title('Magic Mirror: Python Mod')
-welcometext = tk.Label(startupscreen, font = ('caviar dreams', 40), bg='black', fg='white')
-startupscreen.configure(background='black')
-startupscreen.overrideredirect(True)
-welcometext.config(text='Mirror: Vuoristo Mod')
-welcometext.pack(side=LEFT, padx= 120, pady=80)
-# Gets the requested values of the height and widht.
-windowWidth = startupscreen.winfo_reqwidth()
-windowHeight = startupscreen.winfo_reqheight()
-# Gets both half the screen width/height and window width/height
-positionRight = int(startupscreen.winfo_screenwidth()/3 - windowWidth/2)
-positionDown = int(startupscreen.winfo_screenheight()/2 - windowHeight/2)
-
-# Positions the window in the center of the page.
-startupscreen.geometry("+{}+{}".format(positionRight, positionDown))
-startupscreen.update()
-
 import time
 from newsapi import NewsApiClient
 import os
 
-decrypt = list()
-global iteration
-global timecount
-global repull
-global sleep
-iteration = 0
-timecount = 0
-repull = 0
-sleep = 0
 
+class Screen:
 
-while True:
+    def __init__(self, startup_text="hello"):
+        self.startup_screen = tk.Tk()
+        self.welcome_text = tk.Label(self.startup_screen, font=('caviar dreams', 40), bg='black', fg='white')
+        # Gets the requested values of the height and widht.
+        self.windowWidth = self.startup_screen.winfo_reqwidth()
+        self.windowHeight = self.startup_screen.winfo_reqheight()
+        # TODO: move all below to another class
+        self.decrypt = list()
+        self.iteration = 0
+        self.timecount = 0
+        self.repull = 0
+        self.sleep = 0
+        self.api = NewsApiClient(api_key='015d990f2921480d8de32074f9d4f64a')
+        self.clock_frame = None
+        self.clock_frame2 = None
+        self.newstitle = None
+        self.source = None
 
+    def configure_startup_screen(self):
+        self.startup_screen.title('Magic Mirror: Python Mod')
+        self.startup_screen.configure(background='black')
+        self.startup_screen.overrideredirect(True)
+        self.welcome_text.config(text='Mirror: Vuoristo Mod')
+        self.welcome_text.pack(side=LEFT, padx=120, pady=80)
+        # Gets both half the screen width/height and window width/height
+        positionRight = int(self.startup_screen.winfo_screenwidth() / 3 - self.windowWidth / 2)
+        positionDown = int(self.startup_screen.winfo_screenheight() / 2 - self.windowHeight / 2)
 
-    def tick(time1=''):
+        # Positions the window in the center of the page.
+        self.startup_screen.geometry("+{}+{}".format(positionRight, positionDown))
+        self.startup_screen.update()
+
+    def tick(self, time1=''):
         time2 = time.strftime("%H")
         if time2 != time1:
             time1 = time2
-            clock_frame.config(text=time2)
-        clock_frame.after(200, tick)
+            self.clock_frame.config(text=time2)
+        self.clock_frame.after(200, self.tick)
 
-    def tickk(time3=''):
+    def tickk(self, time3=''):
         time4 = time.strftime(":%M:%S")
         if time4 != time3:
             time3 = time4
-            clock_frame2.config(text=time4)
-        clock_frame2.after(200, tickk)
+            self.clock_frame2.config(text=time4)
+        self.clock_frame2.after(200, self.tickk)
 
-
-    #This function waits for a certain amount of 'tocks' and then initiates 'newsheader' -function
-    def tock():
-        global timecount
-        global repull
-        global sleep
-        global decrypt
-        newstitle.after(200, tock)
-        if timecount < 20:
-            timecount +=1
+    # This function waits for a certain amount of 'tocks' and then initiates 'newsheader' -function
+    def tock(self):
+        self.newstitle.after(200, self.tock)
+        if self.timecount < 20:
+            self.timecount += 1
         else:
-            timecount = 0
-            newsheader()
-        if repull < 200:
-            repull +=1
+            self.timecount = 0
+            self.news_header()
+        if self.repull < 200:
+            self.repull += 1
         else:
-            repull = 0
-            headlines = api.get_top_headlines(sources='bbc-news')
+            self.repull = 0
+            headlines = self.api.get_top_headlines(sources='bbc-news')
             payload = headlines
             decrypt = (payload['articles'])
             maxrange = len(decrypt)
-        if sleep < 800:
-            sleep+=1
+        if self.sleep < 800:
+            self.sleep += 1
         else:
             sleep = 0
-            #motiondetector()
+            # motiondetector()
 
-    api = NewsApiClient(api_key='015d990f2921480d8de32074f9d4f64a')
-
-    #This sequence decrypts the info feed for the script
-    headlines = api.get_top_headlines(sources='bbc-news')
-    #print(headlines)
-    payload = headlines
-    decrypt = (payload['articles'])
-    maxrange = len(decrypt)
-
-    #This function iterates over the news headlines. Iteration is the news number, 'itemlist' brings out only the title.
-    def newsheader():
-        global iteration
-        global decrypt
-        itemlist = decrypt[iteration]
-        #print(itemlist['title'])
-        newstitle.config(text=itemlist['title'])
-        source.config(text=itemlist['author'])
-        if iteration < 9:
-            iteration +=1
+    def news_header(self, ):
+        """T
+        his function iterates over the news headlines. Iteration is the news number,
+        'itemlist' brings out only the title.
+        """
+        itemlist = self.decrypt[self.iteration]
+        # print(itemlist['title'])
+        self.newstitle.config(text=itemlist['title'])
+        self.source.config(text=itemlist['author'])
+        if self.iteration < 9:
+            self.iteration += 1
         else:
             iteration = 0
 
+    def run(self):
+        running = True
+        self.configure_startup_screen()
+        while running:
+            self.headlines = self.api.get_top_headlines(sources='bbc-news')
+            # print(headlines)
+            payload = self.headlines
+            self.decrypt = (payload['articles'])
+            maxrange = len(self.decrypt)
 
-    root = tk.Tk()
-    root.title('Mirror')
+            root = tk.Tk()
+            root.title('Mirror')
 
-    masterclock = tk.Label(root)
-    masterclock.pack(anchor=NW, fill=X, padx=45)
-    masterclock.configure(background='black')
-    clock_frame = tk.Label(root, font = ('caviar dreams', 130), bg='black', fg='white')
-    clock_frame.pack(in_=masterclock, side=LEFT)
-    clock_frame2 = tk.Label(root, font = ('caviar dreams', 70), bg='black', fg='white')
-    clock_frame2.pack(in_=masterclock, side=LEFT, anchor = N, ipady=15)
-    newstitle = tk.Label(root, font = ('caviar dreams', 30), bg='black', fg='white')
-    newstitle.pack(side=BOTTOM, anchor=W, fill=X)
-    source = tk.Label(root, font = ('caviar dreams', 20), bg='black', fg='white')
-    source.pack(side=BOTTOM, anchor=W, fill=X)
+            masterclock = tk.Label(root)
+            masterclock.pack(anchor=NW, fill=X, padx=45)
+            masterclock.configure(background='black')
+            self.clock_frame = tk.Label(root, font=('caviar dreams', 130), bg='black', fg='white')
+            self.clock_frame.pack(in_=masterclock, side=LEFT)
+            self.clock_frame2 = tk.Label(root, font=('caviar dreams', 70), bg='black', fg='white')
+            self.clock_frame2.pack(in_=masterclock, side=LEFT, anchor=N, ipady=15)
+            self.newstitle = tk.Label(root, font=('caviar dreams', 30), bg='black', fg='white')
+            self.newstitle.pack(side=BOTTOM, anchor=W, fill=X)
+            self.source = tk.Label(root, font=('caviar dreams', 20), bg='black', fg='white')
+            self.source.pack(side=BOTTOM, anchor=W, fill=X)
 
-    newsheader()
-    tick()
-    tickk()
-    tock()
+            self.news_header()
+            self.tick()
+            self.tickk()
+            self.tock()
 
-    root.attributes("-fullscreen", True)
-    root.configure(background='black')
-    startupscreen.destroy()
-    root.mainloop()
+            root.attributes("-fullscreen", True)
+            root.configure(background='black')
+            self.startup_screen.destroy()
+            root.mainloop()
+
+
+if __name__ == "__main__":
+    screen = Screen()
+    screen.run()
