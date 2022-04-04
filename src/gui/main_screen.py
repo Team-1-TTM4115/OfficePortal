@@ -12,9 +12,10 @@ class Screen:
         self.root = None
         self.startup_screen = tk.Tk()
         self.welcome_text = tk.Label(self.startup_screen, font=('caviar dreams', 40), bg='black', fg='white')
-        # Gets the requested values of the height and widht.
+        # Gets the requested values of the height and width.
         self.windowWidth = self.startup_screen.winfo_reqwidth()
         self.windowHeight = self.startup_screen.winfo_reqheight()
+        self.frames = {}
 
     def configure_startup_screen(self) -> None:
         """
@@ -50,13 +51,40 @@ class Screen:
         self.root.title('Mirror')
         self.root.attributes("-fullscreen", True)
         self.root.configure(background='black')
+        self.create_start_page(self.root)
+        self.create_test_page(self.root)
+
+    def create_start_page(self, root: tk.Tk):
+        start_frame = tk.Frame(root)
+        start_frame.pack(expand=True, fill="both", side=TOP)
         # Creates the clock object on the main screen.
-        clock = Clock(self.root)
+        clock = Clock(root)
         clock.display_time()
         clock.display_date()
         # Creates the news object on the main screen.
-        news_tab = News(self.root)
+        news_tab = News(root)
         news_tab.show_news()
+        button = tk.Button(start_frame, text="Go to next",
+                           command=lambda: self.show_frame("test_page"))
+        button.pack(side=LEFT)
+        self.frames['start_frame'] = start_frame
+
+    def create_test_page(self, root):
+        test_frame = tk.Frame(root)
+        button = tk.Button(test_frame, text="Go to start",
+                           command=lambda: self.show_frame("start_frame"))
+        button.pack(side=LEFT)
+        self.frames['start_frame'] = test_frame
+
+    def show_frame(self, frame_name):
+        '''Show a frame for the given page name'''
+        frame = self.frames[frame_name]
+        frame.tkraise()
+
+    def set_background_img(self):
+        # TODO: Emile?
+        # Add image file
+        bg = PhotoImage(file="Your_img.png")
 
     def run(self) -> None:
         """
