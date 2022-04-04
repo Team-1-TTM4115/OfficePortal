@@ -55,26 +55,36 @@ class Screen:
         self.create_test_page(self.root)
 
     def create_start_page(self, root: tk.Tk):
-        start_frame = tk.Frame(root)
+        start_frame = tk.Frame(root, bg='black')
         start_frame.pack(expand=True, fill="both", side=TOP)
         # Creates the clock object on the main screen.
-        clock = Clock(root)
+        clock = Clock(start_frame)
         clock.display_time()
         clock.display_date()
         # Creates the news object on the main screen.
-        news_tab = News(root)
+        news_tab = News(start_frame)
         news_tab.show_news()
         button = tk.Button(start_frame, text="Go to next",
                            command=lambda: self.show_frame("test_page"))
         button.pack(side=LEFT)
         self.frames['start_frame'] = start_frame
+        start_frame.grid(row=0, column=0, sticky="nsew")
+
+    def create_grid_frame(self, root):
+        container = tk.Frame(self)
+        container.pack(side="top", fill="both", expand=True)
+        container.grid_rowconfigure(0, weight=1)
+        container.grid_columnconfigure(0, weight=1)
+
 
     def create_test_page(self, root):
-        test_frame = tk.Frame(root)
+        test_frame = tk.Frame(root, bg='black')
         button = tk.Button(test_frame, text="Go to start",
                            command=lambda: self.show_frame("start_frame"))
         button.pack(side=LEFT)
         self.frames['start_frame'] = test_frame
+        self.frames['test_page'] = test_frame
+        test_frame.grid(row=0, column=0, sticky="nsew")
 
     def show_frame(self, frame_name):
         '''Show a frame for the given page name'''
