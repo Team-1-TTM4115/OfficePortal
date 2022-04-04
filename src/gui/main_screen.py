@@ -2,8 +2,6 @@ import time
 import tkinter as tk
 from tkinter import *
 
-import cv2
-
 from clock import Clock
 from news import News
 
@@ -54,13 +52,14 @@ class Screen:
         self.root.title('Mirror')
         self.root.attributes("-fullscreen", True)
         self.root.configure(background='black')
+        self.create_grid_frame(self.root)
         self.create_start_page(self.frame_container)
         self.create_test_page(self.frame_container)
         self.show_frame("start_frame")
 
     def create_start_page(self, root: tk.Tk):
         start_frame = tk.Frame(root, bg='black')
-        start_frame.pack(expand=True, fill="both", side=TOP, anchor=CENTER)
+        start_frame.pack(expand=False, fill=BOTH, side=TOP, anchor=CENTER)
         # Creates the clock object on the main screen.
         clock = Clock(start_frame)
         clock.display_time()
@@ -80,18 +79,13 @@ class Screen:
         self.frame_container.grid_rowconfigure(0, weight=1)
         self.frame_container.grid_columnconfigure(0, weight=1)
 
-
     def create_test_page(self, root):
-        test_frame = tk.Frame(root, bg='black')
+        test_frame = tk.Frame(root, bg='black', )
         button = tk.Button(test_frame, text="Go to start",
                            command=lambda: self.show_frame("start_frame"))
-        button.pack(side=LEFT)
+        button.pack(anchor=CENTER)
         self.frames['test_page'] = test_frame
-        test_frame.grid(row=0, column=0, sticky="nsew")
-
-    def create_video_page(self, root):
-        vid = cv2.VideoCapture(0)
-        canvas = tk.Canvas(root,width=vid.width)
+        test_frame.grid(row=0, column=0, sticky="nsew", )
 
     def show_frame(self, frame_name):
         '''Show a frame for the given page name'''

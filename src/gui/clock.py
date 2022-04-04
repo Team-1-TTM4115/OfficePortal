@@ -31,7 +31,7 @@ class Clock:
         """
         # Creates the date frame
         self.date_frame = Label(self.clock_space, font=('caviar dreams', 20), bg='black', fg='white')
-        self.date_frame.pack(in_=self.clock_space, anchor=N)
+        self.date_frame.pack(in_=self.clock_space, anchor=N, )
         # Creates the time frame
         self.clock_frame = tk.Label(self.clock_space, font=('caviar dreams', 70), bg='black', fg='white')
         self.clock_frame.pack(in_=self.clock_space, anchor=S)
