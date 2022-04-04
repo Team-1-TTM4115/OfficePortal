@@ -16,6 +16,7 @@ class Screen:
         self.windowWidth = self.startup_screen.winfo_reqwidth()
         self.windowHeight = self.startup_screen.winfo_reqheight()
         self.frames = {}
+        self.frame_container = None
 
     def configure_startup_screen(self) -> None:
         """
@@ -51,8 +52,9 @@ class Screen:
         self.root.title('Mirror')
         self.root.attributes("-fullscreen", True)
         self.root.configure(background='black')
-        self.create_start_page(self.root)
-        self.create_test_page(self.root)
+        self.create_grid_frame()
+        self.create_start_page(self.frame_container)
+        self.create_test_page(self.frame_container)
 
     def create_start_page(self, root: tk.Tk):
         start_frame = tk.Frame(root, bg='black')
@@ -71,10 +73,10 @@ class Screen:
         start_frame.grid(row=0, column=0, sticky="nsew")
 
     def create_grid_frame(self, root):
-        container = tk.Frame(self)
-        container.pack(side="top", fill="both", expand=True)
-        container.grid_rowconfigure(0, weight=1)
-        container.grid_columnconfigure(0, weight=1)
+        self.frame_container = tk.Frame(root)
+        self.frame_container.pack(side="top", fill="both", expand=True)
+        self.frame_container.grid_rowconfigure(0, weight=1)
+        self.frame_container.grid_columnconfigure(0, weight=1)
 
 
     def create_test_page(self, root):
