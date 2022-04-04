@@ -2,6 +2,8 @@ import time
 import tkinter as tk
 from tkinter import *
 
+import cv2
+
 from clock import Clock
 from news import News
 
@@ -55,10 +57,11 @@ class Screen:
         self.create_grid_frame()
         self.create_start_page(self.frame_container)
         self.create_test_page(self.frame_container)
+        self.show_frame("start_frame")
 
     def create_start_page(self, root: tk.Tk):
         start_frame = tk.Frame(root, bg='black')
-        start_frame.pack(expand=True, fill="both", side=TOP)
+        start_frame.pack(expand=True, fill="both", side=TOP, anchor=CENTER)
         # Creates the clock object on the main screen.
         clock = Clock(start_frame)
         clock.display_time()
@@ -84,13 +87,17 @@ class Screen:
         button = tk.Button(test_frame, text="Go to start",
                            command=lambda: self.show_frame("start_frame"))
         button.pack(side=LEFT)
-        self.frames['start_frame'] = test_frame
         self.frames['test_page'] = test_frame
         test_frame.grid(row=0, column=0, sticky="nsew")
+
+    def create_video_page(self, root):
+        vid = cv2.VideoCapture(0)
+        canvas = tk.Canvas(root,width=vid.width)
 
     def show_frame(self, frame_name):
         '''Show a frame for the given page name'''
         frame = self.frames[frame_name]
+        print(frame)
         frame.tkraise()
 
     def set_background_img(self):

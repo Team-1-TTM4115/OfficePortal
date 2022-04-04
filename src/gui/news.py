@@ -27,7 +27,7 @@ class News:
         self.news_title = tk.Label(self.screen, font=('caviar dreams', 30), bg='black', fg='white')
         self.news_title.pack(side=BOTTOM, anchor=W, fill=X)
         self.source = tk.Label(self.screen, font=('caviar dreams', 20), bg='black', fg='white')
-        self.source.pack(side=BOTTOM, anchor=W, fill=X)
+        self.source.pack(side=BOTTOM, anchor=CENTER, fill=X)
 
     def fetch_news(self) -> None:
         """
