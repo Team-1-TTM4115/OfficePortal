@@ -54,7 +54,6 @@ class Screen:
         self.root.title('Mirror')
         self.root.attributes("-fullscreen", True)
         self.root.configure(background='black')
-        self.create_grid_frame()
         self.create_start_page(self.frame_container)
         self.create_test_page(self.frame_container)
         self.show_frame("start_frame")
