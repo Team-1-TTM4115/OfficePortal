@@ -49,4 +49,4 @@ class News:
             self.iteration += 1
         else:
             self.iteration = 0
-        self.news_title.after(3000, self.show_news)
+        self.news_title.after(5500, self.show_news)
