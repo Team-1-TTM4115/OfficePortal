@@ -2,15 +2,16 @@ import cv2
 import paho.mqtt.client as mqtt
 import logging
 import time
+import json
 
 MQTT_BROKER = 'mqtt.item.ntnu.no'
 MQTT_PORT = 1883
 
-MQTT_TOPIC_OUTPUT = 'ttm4115/team_1/project/sensor1'
+MQTT_TOPIC_OUTPUT = 'ttm4115/team_1/project/sensor'
 
 
 
-class SensorMovement:
+class SensorMovementComponent:
 
     def on_connect(self, client, userdata, flags, rc):
         self._logger.debug('MQTT connected to {}'.format(client))
@@ -19,6 +20,9 @@ class SensorMovement:
         pass
 
     def __init__(self):
+        #Here is the sensor name
+        self.sensorName="sensor1"
+
         # get the logger object for the component
         self._logger = logging.getLogger(__name__)
         print('logging under name {}.'.format(__name__))
@@ -76,8 +80,10 @@ class SensorMovement:
             if (time_2 - time_1)>1:
                 time_1 = time.time()
                 if movent==True:
-                    message= "Movement"
-                    self.mqtt_client.publish(MQTT_TOPIC_OUTPUT, message)    
+                    message= "movement"
+                    command = {"message": message, "sensor": self.sensorName} 
+                    payload = json.dumps(command)
+                    self.mqtt_client.publish(MQTT_TOPIC_OUTPUT, payload)    
             # press escape to exit
             if (cv2.waitKey(30) == 27):
                 break
@@ -95,4 +101,4 @@ formatter = logging.Formatter('%(asctime)s - %(name)-12s - %(levelname)-8s - %(m
 ch.setFormatter(formatter)
 logger.addHandler(ch)
 
-t = SensorMovement()
+t = SensorMovementComponent()
