@@ -11,7 +11,7 @@ class Screen:
     def __init__(self):
         # Gets the requested values of the height and width.
         self.root = tk.Tk()
-        # self.root.withdraw()
+        self.root.withdraw()
         self.frames = {}
         self.frame_container = None
 
@@ -47,6 +47,7 @@ class Screen:
         welcome_text.destroy()
         startup_screen.destroy()
 
+
     def create_main_screen(self) -> tk.Tk:
         """
         Sets up the main screen for the magic mirror. Used
@@ -55,6 +56,7 @@ class Screen:
         """
         # Creates and configures the main screen.
         root = self.root
+        root.deiconify()
         root.title('Mirror')
         root.attributes("-fullscreen", True)
         root.configure(background='black')
