@@ -4,7 +4,7 @@ from MqttClient import MqttClient
 
 TOPIC_CONNECT = 'ttm4115/team_1/project/connect'
 
-mqtt_client = MqttClient()
+mqtt_client = MqttClient("2")
 
 
 def read_barcodes(frame):

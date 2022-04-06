@@ -1,3 +1,5 @@
+import uuid
+
 import paho.mqtt.client as mqtt
 import logging
 
@@ -10,15 +12,15 @@ class MqttClient:
         self._logger.debug('MQTT connected to {}'.format(client))
         print('MQTT connected to {}'.format(client))
 
-    def __init__(self):
+    def __init__(self, client_id=str(uuid.uuid1())):
         self._logger = logging.getLogger(__name__)
         print('logging under name {}.'.format(__name__))
         self._logger.info('Starting Component')
 
         self._logger.debug('Connecting to MQTT broker {} at port {}'.format(MQTT_BROKER, MQTT_PORT))
-        self.client = mqtt.Client("Office_Portal")
+        self.client = mqtt.Client(client_id)
+        print("New MQTT Client connecting: " + client_id)
 
         self.client.on_connect = self.on_connect
         self.client.connect(MQTT_BROKER, MQTT_PORT)
-
-        #self.client.loop_start()
+        print("MQTT Client Connected: " + client_id)
