@@ -1,6 +1,6 @@
 import cv2
 from pyzbar import pyzbar
-from src.mqtt_client import MqttClient
+from src.mqtt_client.mqtt_client import MqttClient
 
 TOPIC_CONNECT = 'ttm4115/team_1/project/connect'
 
