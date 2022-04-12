@@ -13,4 +13,4 @@ This repository contains the complete source code for the OfficePortal solution.
 
 Perform the following terminal command to create an conda environment and installing the required dependencies.
 
-    conda env create --name OfficePortal --file=environments.yml
+    conda env create --name OfficePortal --file=environment.yml
