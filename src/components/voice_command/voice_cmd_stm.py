@@ -8,7 +8,7 @@ VOICE_COMMANDS = [
     {"command": "select menu item number", "feedback": "selecting menu item"},
 ]
 
-class VoiceSTM:
+class VoiceCmdSTM:
     def __init__(self):
         self.vc = VoiceRecognition()
 
@@ -54,29 +54,31 @@ class VoiceSTM:
         # TODO: send error message to the other STM
         self.stm.send("unknown_cmd_voice_feedback", kwargs={"feedback": e_msg})
 
-voice_stm = VoiceSTM()
+voice_cmd_stm = VoiceCmdSTM()
 
 # Transitions
 t0 = {"source": "initial", "target": "idle"}
 t1 = {"trigger": "start_listening", "source": "idle", "target": "listening"}
-t2 = {"trigger": "cmd_found", "source": "listening", "target": "known_cmd", "effect": "send_command(*)"}
-t3 = {"trigger": "cmd_not_found", "source": "listening", "target": "unknown_cmd", "effect": "send_err_msg(*)"}
-t4 = {"trigger": "known_cmd_voice_feedback", "source": "known_cmd", "target": "speaking"}
-t5 = {"trigger": "unknown_cmd_voice_feedback", "source": "unknown_cmd", "target": "speaking"}
-t6 = {"trigger": "done", "source": "speaking", "target": "listening"}
+t2 = {"trigger": "stop_listening", "source": "listening", "target": "idle"}
+t3 = {"trigger": "cmd_found", "source": "listening", "target": "known_cmd", "effect": "send_command(*)"}
+t4 = {"trigger": "cmd_not_found", "source": "listening", "target": "unknown_cmd", "effect": "send_err_msg(*)"}
+t5 = {"trigger": "known_cmd_voice_feedback", "source": "known_cmd", "target": "speaking"}
+t6 = {"trigger": "unknown_cmd_voice_feedback", "source": "unknown_cmd", "target": "speaking"}
+t7 = {"trigger": "done", "source": "speaking", "target": "listening"}
 
 # States
 s0 = {"name": "initial"}
-s1 = {"name": "listening", "entry": "voice_cmd_listening"}
-s2 = {"name": "known_cmd"}
-s3 = {"name": "unknown_cmd"}
-s4 = {"name": "speaking", "do": "voice_cmd_feedback(*)"}
+s1 = {"name": "listening", "entry": "voice_cmd_listening()"}
+s2 = {"name": "known_cmd", "stop_listening": "defer"}
+s3 = {"name": "unknown_cmd", "stop_listening": "defer"}
+s4 = {"name": "speaking", "do": "voice_cmd_feedback(*)", "stop_listening": "defer"}
 
-machine =  stmpy.Machine(name="voice_stm", transitions=[t0, t1, t2, t3, t4, t5, t6], states=[s0, s1, s2, s3, s4], obj=voice_stm)
-voice_stm.stm = machine
+machine =  stmpy.Machine(name="voice_stm", transitions=[t0, t1, t2, t3, t4, t5, t6, t7], states=[s0, s1, s2, s3, s4], obj=voice_cmd_stm)
+voice_cmd_stm.stm = machine
 
 driver = stmpy.Driver()
 driver.add_machine(machine)
 driver.start()
 
 driver.send("start_listening", "voice_stm")
+# driver.send("stop_listening", "voice_stm") - to turn off voice listening
