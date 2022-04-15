@@ -10,7 +10,7 @@ dog= cv2.imread(r'C:\Users\Bruker\Projects\OfficePortal\src\Filter\dog.png')
 def put_dog_filter(dog, fc, x, y, w, h):
     face_width = w
     face_height = h
-
+    #resizing the pictures/filters to fit the face properties
     dog = cv2.resize(dog, (int(face_width*1.5), int(face_height *1.95)))
     for i in range(int(face_height * 1.75)):
         for j in range(int(face_width * 1.5)):
@@ -63,6 +63,7 @@ while True:
     (rval, im) = webcam.read()
     im = cv2.flip(im, 1, 0)
     gray = cv2.cvtColor(im, cv2.COLOR_BGR2GRAY)
+    #Detects objects in the video and returns a list with positions
     fl = face.detectMultiScale(gray,1.19,7)
 
     for (x, y, w, h) in fl:
