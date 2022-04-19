@@ -52,6 +52,7 @@ class StreamVideoReciver():
                 if data["command"] == "streamvideo" and data["reciver"] == self.name and self.active == True:
                     frame_video = self.bts_to_frame(data["answer"])
                     self.frame = frame_video
+                    self.start_stream()
                     # cv2.imshow("webcam", framevideo)
                     # cv2.waitKey(20)
 
@@ -104,8 +105,7 @@ class StreamVideoReciver():
                 pass
 
     def start_stream(self):
-        self.started_stream = True
-        if not self.start_stream:
+        if not self.started_stream:
             self.started_stream = True
             self.show_stream()
 
