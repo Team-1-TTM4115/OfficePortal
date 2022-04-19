@@ -20,7 +20,7 @@ class StreamAudio():
     def on_connect(self, client, userdata, flags, rc):
         self._logger.debug("MQTT connected to {}".format(client))
 
-    def loadjson(self, msg):
+    def load_json(self, msg):
         try:
             data = json.loads(msg.payload.decode("utf-8"))
         except Exception as err:
@@ -30,7 +30,7 @@ class StreamAudio():
 
     def on_message(self, client, userdata, msg):
         if msg.topic == "ttm4115/team_1/project/audio"+str(self.number):
-            data =self.loadjson(msg)
+            data =self.load_json(msg)
             if data["command"] == "streamstart" and data["reciver"]== self.name+"audio":
                 self.active =True
                 self.sendTo =data["answer"]
