@@ -3,7 +3,7 @@ import tkinter as tk
 from tkinter import *
 
 import cv2
-from PIL import ImageTk
+from PIL import Image, ImageTk
 from src.gui.clock import Clock
 from src.gui.news import News
 from qr.qr_scanner import QrReader
@@ -17,7 +17,8 @@ class Screen:
         self.root.withdraw()
         self.frames = {}
         self.frame_container = None
-        self.qr = QrReader()
+        self.cap = None
+        self.canvas = None
 
     def configure_startup_screen(self) -> None:
         """
@@ -26,7 +27,7 @@ class Screen:
         :return: None
         """
         # The startup-screen.
-        tk.NoDefaultRoot()  # may be redundant or may help clean up memory.
+        # tk.NoDefaultRoot()  # may be redundant or may help clean up memory.
         startup_screen = tk.Tk()
         startup_screen.overrideredirect(True)
         startup_screen.wm_attributes("-transparent", True)
@@ -137,14 +138,31 @@ class Screen:
 
     def create_qr_page(self):
         if self.frame_container:
-            filter_frame = tk.Frame(self.frame_container, bg='black')
-            button1 = tk.Button(filter_frame, text="Go to video frame",
-                                command=lambda: self.show_frame("video_frame"))
-            button1.pack(anchor=CENTER)
-            self.frames['qr_frame'] = filter_frame
-            filter_frame.grid(row=0, column=0, sticky="nsew", )
+            cap = cv2.VideoCapture(0)
+            self.cap = cap
+            width = cap.get(cv2.CAP_PROP_FRAME_WIDTH)
+            height = cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
+            qr_frame = tk.Frame(self.frame_container, bg='black')
+
+            self.canvas = tk.Canvas(qr_frame, width=width, height=height)
+            self.canvas.grid(row=0, column=0)
+
+            self.frames['qr_frame'] = qr_frame
+            qr_frame.grid(row=0, column=0, sticky="nsew", )
+            self.update_qr_frame()
         else:
-            Exception("Root is not defined")
+            Exception("Frame container is not defined")
+
+    def update_qr_frame(self):
+        # Get the latest frame and convert image format
+        print("Updating QR frame")
+        image = cv2.cvtColor(self.cap.read()[1], cv2.COLOR_BGR2RGB)  # to RGB
+        image = Image.fromarray(image)  # to PIL format
+        image = ImageTk.PhotoImage(image)  # to ImageTk format
+        # Update image
+        self.canvas.create_image(0, 0, anchor=tk.NW, image=image)
+        # Repeat every 'interval' ms
+        self.canvas.after(20, self.update_qr_frame)
 
     def show_frame(self, frame_name) -> None:
         """
