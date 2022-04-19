@@ -51,7 +51,12 @@ class StreamVideoReciver():
                 data = self.loadjson(msg)
                 if data["command"] == "streamvideo" and data["reciver"] == self.name and self.active == True:
                     frame_video = self.bts_to_frame(data["answer"])
-                    self.show_stream(frame_video)
+                    window_name = 'webcam'
+                    cv2.namedWindow(window_name, cv2.WND_PROP_FULLSCREEN)
+                    cv2.moveWindow(window_name, self.width - 1, self.height - 1)
+                    cv2.setWindowProperty(window_name, cv2.WND_PROP_FULLSCREEN,
+                                          cv2.WINDOW_FULLSCREEN)
+                    cv2.imshow('webcam', frame_video)
                     # cv2.imshow("webcam", framevideo)
                     # cv2.waitKey(20)
 
@@ -83,8 +88,8 @@ class StreamVideoReciver():
         t1 = Thread(target=self.mqtt_client.loop_start())
         t1.start()
 
-        t2 = Thread(target=self.start())
-        t2.start()
+        # t2 = Thread(target=self.start())
+        # t2.start()
 
         # for tkinter
         self.canvas = canvas
