@@ -1,20 +1,24 @@
 import tkinter
-from tkinter.ttk import Label
+from tkinter import NW
 
-import PIL
 import cv2
 from PIL import Image, ImageTk
 from pyzbar import pyzbar
+
 from src.mqtt_client import MqttClient
 
 TOPIC_CONNECT = 'ttm4115/team_1/project/connect'
 
 
 class QrReader:
-    def __init__(self, frame):
+    def __init__(self, frame, heigth, width):
         self.__mqtt_client = MqttClient("QrReader")
-        self.capture = None
+        self.cap = None
         self.gui_window = frame
+        self.image = None
+        self.canvas = None
+        self.height = heigth
+        self.width = width
 
     def __read_barcodes(self, frame):
         barcodes = pyzbar.decode(frame)
@@ -26,27 +30,30 @@ class QrReader:
 
             self.__mqtt_client.publish(TOPIC_CONNECT, barcode_info)
             # TODO: Do something after scanning a code. Like trying to connect?
-
         return frame
 
     def capture_video(self):
         # TODO: Integrate into gui somehow
         camera = cv2.VideoCapture(0)
-        self.capture = camera
+        self.cap = camera
 
-        ret, frame = camera.read()
+        self.canvas = tkinter.Canvas(self.gui_window, bg='black', borderwidth=0)
+        self.canvas.pack(fill=tkinter.BOTH, expand=tkinter.YES)
+        self.update_qr_frame()
+
+    def update_qr_frame(self):
+        # Get the latest frame and convert image format
+        ret, frame = self.cap.read()
+        frame = cv2.resize(frame, (self.height, self.width))
         frame = self.__read_barcodes(frame)
-        cv2.imshow('Barcode/QR code reader', frame)
-        # TODO: FIgure out what it does.
-        # if cv2.waitKey(1) & 0xFF == 27:
+        self.image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)  # to RGB
+        self.image = Image.fromarray(self.image)  # to PIL format
+        self.image = ImageTk.PhotoImage(self.image)  # to ImageTk format
 
-        canvas = tkinter.Canvas(self.gui_window, width=200, height=200)
-        canvas.pack()
-        photo = PIL.ImageTk.PhotoImage(image=PIL.Image.fromarray(frame))
-        # Add a PhotoImage to the Canvas
-        canvas.create_image(0, 0, image=photo, anchor=tkinter.NW)
-        self.gui_window.after(10, self.capture_video)
+        # Update image
+        self.canvas.create_image(0, 0, anchor=NW, image=self.image)
+        self.canvas.after(10, self.update_qr_frame)
 
     def stop_capture(self):
-        self.capture.release()
+        self.cap.release()
         cv2.destroyAllWindows()

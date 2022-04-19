@@ -17,8 +17,9 @@ class Screen:
         self.root.withdraw()
         self.frames = {}
         self.frame_container = None
-        self.cap = None
-        self.canvas = None
+        self.height = None
+        self.width = None
+        self.qr_reader = None
 
     def configure_startup_screen(self) -> None:
         """
@@ -66,6 +67,8 @@ class Screen:
         root.title('Office Portal')
         root.attributes("-fullscreen", True)
         root.configure(background='black')
+        self.height = root.winfo_screenheight()
+        self.width = root.winfo_screenwidth()
         frame_container = self.create_grid_frame(root)
         self.frame_container = frame_container
         # TODO: Remove from here. GUI controller should be responsible for this.
@@ -103,8 +106,8 @@ class Screen:
         :param root: The root window
         :return: None
         """
-        frame_container = tk.Frame(root)
-        frame_container.pack(side="top", fill="both", expand=True)
+        frame_container = tk.Frame(root, bg='white')
+        frame_container.pack(fill="both", expand=True)
         frame_container.grid_rowconfigure(0, weight=1)
         frame_container.grid_columnconfigure(0, weight=1)
         return frame_container
@@ -138,31 +141,17 @@ class Screen:
 
     def create_qr_page(self):
         if self.frame_container:
-            cap = cv2.VideoCapture(0)
-            self.cap = cap
-            width = cap.get(cv2.CAP_PROP_FRAME_WIDTH)
-            height = cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
             qr_frame = tk.Frame(self.frame_container, bg='black')
-
-            self.canvas = tk.Canvas(qr_frame, width=width, height=height)
-            self.canvas.grid(row=0, column=0)
-
+            print(self.width, self.height)
             self.frames['qr_frame'] = qr_frame
-            qr_frame.grid(row=0, column=0, sticky="nsew", )
-            self.update_qr_frame()
+            qr_frame.grid(row=0, column=0, sticky="nsew")
+            self.qr_reader = QrReader(qr_frame, self.width, self.height)
+            self.qr_reader.capture_video()
         else:
             Exception("Frame container is not defined")
 
-    def update_qr_frame(self):
-        # Get the latest frame and convert image format
-        print("Updating QR frame")
-        image = cv2.cvtColor(self.cap.read()[1], cv2.COLOR_BGR2RGB)  # to RGB
-        image = Image.fromarray(image)  # to PIL format
-        image = ImageTk.PhotoImage(image)  # to ImageTk format
-        # Update image
-        self.canvas.create_image(0, 0, anchor=tk.NW, image=image)
-        # Repeat every 'interval' ms
-        self.canvas.after(20, self.update_qr_frame)
+    def destroy_qr_page(self):
+        self.qr_reader.destroy_video()
 
     def show_frame(self, frame_name) -> None:
         """
