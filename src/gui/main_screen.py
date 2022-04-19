@@ -76,7 +76,7 @@ class Screen:
         # TODO: Remove from here. GUI controller should be responsible for this.
         self.create_start_page(frame_container)
         self.create_video_page()
-        self.create_qr_page()
+        # self.create_qr_page()
         self.create_filter_page(frame_container)
         self.create_waiting_page()
         self.show_frame("start_frame")

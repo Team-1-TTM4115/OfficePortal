@@ -51,12 +51,7 @@ class StreamVideoReciver():
                 data = self.loadjson(msg)
                 if data["command"] == "streamvideo" and data["reciver"] == self.name and self.active == True:
                     frame_video = self.bts_to_frame(data["answer"])
-                    window_name = 'webcam'
-                    cv2.namedWindow(window_name, cv2.WND_PROP_FULLSCREEN)
-                    cv2.moveWindow(window_name, self.width - 1, self.height - 1)
-                    cv2.setWindowProperty(window_name, cv2.WND_PROP_FULLSCREEN,
-                                          cv2.WINDOW_FULLSCREEN)
-                    cv2.imshow('webcam', frame_video)
+                    self.frame = frame_video
                     # cv2.imshow("webcam", framevideo)
                     # cv2.waitKey(20)
 
@@ -95,6 +90,8 @@ class StreamVideoReciver():
         self.canvas = canvas
         self.height = height
         self.width = width
+        self.frame = None
+        self.started_stream = False
 
     def start(self):
         while True:
@@ -106,13 +103,20 @@ class StreamVideoReciver():
             except:
                 pass
 
-    def show_stream(self, frame):
-        frame = cv2.resize(frame, (self.height, self.width))
+    def start_stream(self):
+        self.started_stream = True
+        if not self.start_stream:
+            self.started_stream = True
+            self.show_stream()
+
+    def show_stream(self):
+        frame = cv2.resize(self.frame, (self.height, self.width))
         self.image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)  # to RGB
         self.image = Image.fromarray(self.image)  # to PIL format
         self.image = ImageTk.PhotoImage(self.image)  # to ImageTk format
         # Update image
         self.canvas.create_image(0, 0, anchor=NW, image=self.image)
+        self.canvas.after(10, self.show_stream)
 
 
 if __name__ == "__main__":
