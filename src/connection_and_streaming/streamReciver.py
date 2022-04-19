@@ -23,7 +23,7 @@ class StreamVideoReciver():
     def on_connect(self, client, userdata, flagSs, rc):
         self._logger.debug("MQTT connected to {}".format(client))
 
-    def loadjson(self, msg):
+    def load_json(self, msg):
         try:
             data = json.loads(msg.payload.decode("utf-8"))
         except Exception as err:
@@ -33,7 +33,7 @@ class StreamVideoReciver():
 
     def on_message(self, client, userdata, msg):
         if msg.topic == 'ttm4115/team_1/project/reciver':
-            data =self.loadjson(msg)
+            data =self.load_json(msg)
             if data["command"] == "streamstart" and data["reciver"]== self.name:
                 self.recivefrom =data["answer"]
                 self.mqtt_client.subscribe("ttm4115/team_1/project/camera"+self.recivefrom[-1])
@@ -46,7 +46,7 @@ class StreamVideoReciver():
                 cv2.destroyAllWindows()
         if self.recivefrom != None:
             if msg.topic == "ttm4115/team_1/project/camera"+self.recivefrom[-1] :#and not_sleep
-                data =self.loadjson(msg)
+                data =self.load_json(msg)
                 if data["command"] == "streamvideo" and data["reciver"]== self.name and self.active ==True:
                     framevideo=self.bts_to_frame(data["answer"])
                     cv2.imshow("webcam",framevideo)

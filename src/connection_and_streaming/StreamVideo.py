@@ -10,11 +10,11 @@ import time
 import os
 import cvzone
 from cvzone.SelfiSegmentationModule import SelfiSegmentation
+import stmpy
 
 MQTT_BROKER = "mqtt.item.ntnu.no"
 MQTT_PORT = 1883
 FPS =30
-sleeping=False
 
 MQTT_TOPIC_SENSOR = 'ttm4115/team_1/project/sensor'
 
@@ -22,7 +22,7 @@ class StreamVideo:
     def on_connect(self, client, userdata, flags, rc):
         self._logger.debug("MQTT connected to {}".format(client))
 
-    def loadjson(self, msg):
+    def load_json(self, msg):
         try:
             data = json.loads(msg.payload.decode("utf-8"))
         except Exception as err:
@@ -32,7 +32,7 @@ class StreamVideo:
 
     def on_message(self, client, userdata, msg): 
         if msg.topic == 'ttm4115/team_1/project/camera'+str(self.number):
-            data =self.loadjson(msg)
+            data =self.load_json(msg)
             if data["command"] == "streamstart" and data["reciver"]== self.name+"camera":
                 self.video_on = True
                 self.sendTo =data["answer"]
@@ -55,7 +55,7 @@ class StreamVideo:
             elif data["command"] == "backgorund_off" and data["reciver"]== self.name+"camera":
                 self.background =None
         elif msg.topic == 'ttm4115/team_1/project/sensor':
-            data =self.loadjson(msg)
+            data =self.load_json(msg)
             if (self.sensor_on == False) and data["reciver"]== self.name+"sensor":
                 if data["command"] == "start":
                     self.office = data["sender"]
@@ -63,6 +63,13 @@ class StreamVideo:
             if (self.sensor_on == True) and (data["reciver"]== self.name+"sensor") and ((data["sender"]== self.office) ):
                 if data["command"] == "stop":
                     self.sensor_on =False
+        elif msg.topic == 'ttm4115/team_1/project/QR'+str(self.number):
+            data =self.load_json(msg)
+            if data["command"] == "start":
+                self.QR_on=True
+            elif data["command"] == "stop":
+                self.QR_on=False
+
 
     def bts_to_frame(self,b64_string):
         base64_bytes=b64_string.encode("utf-8")
@@ -124,6 +131,7 @@ class StreamVideo:
         self.on=True
         self.sensor_on =False
         self.video_on =False
+        self.QR_on=False
 
         #Fliter
         self.face = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
@@ -131,12 +139,6 @@ class StreamVideo:
         self.glass=cv2.imread(r'C:\Users\ingeb\Documents\universtiet\NTNU\tredje\var\Desgin\project_design\OfficePortal\src\I+E\glasses.png')
         self.dog= cv2.imread(r'C:\Users\ingeb\Documents\universtiet\NTNU\tredje\var\Desgin\project_design\OfficePortal\src\I+E\dog.png')
         self.filter =None
-
-        #Background
-
-        
-
-
 
         # get the logger object for the component
         self._logger = logging.getLogger(__name__)
@@ -146,27 +148,19 @@ class StreamVideo:
         # create a new MQTT client
         self._logger.debug("Connecting to MQTT broker {} at port {}".format(MQTT_BROKER, MQTT_PORT))
         self.mqtt_client = MqttClient("StreamVideo"+self.name)
-        # callback methods
         self.mqtt_client.on_connect = self.on_connect
         self.mqtt_client.on_message = self.on_message
-        # Connect to the broker
         self.mqtt_client.connect(MQTT_BROKER, MQTT_PORT)
         self.mqtt_client.subscribe("ttm4115/team_1/project/camera"+str(self.number))
+        self.mqtt_client.subscribe("ttm4115/team_1/project/QR"+str(self.number))
         self.mqtt_client.subscribe(MQTT_TOPIC_SENSOR)
-        # start the internal loop to process MQTT messages
         thread = Thread(target=self.mqtt_client.loop_start())
         thread.start()
 
         cap = cv2.VideoCapture(0)
-
-        #Background
-        #cap.set(3, 640)
-        #cap.set(4,480)
         self.segmentor = SelfiSegmentation()
-        #fpsReader = cvzone.FPS()
         self.listImg = os.listdir(r"C:\Users\ingeb\Documents\universtiet\NTNU\tredje\var\Desgin\project_design\OfficePortal\src\I+E\BackgroundFilters")
         listImg = os.listdir(r"C:\Users\ingeb\Documents\universtiet\NTNU\tredje\var\Desgin\project_design\OfficePortal\src\I+E\BackgroundFilters")
-        #print(listImg)
         self.imgList = []
         self.background =None
 
@@ -176,25 +170,29 @@ class StreamVideo:
             img = cv2.imread(imagePath)
             self.imgList.append(img)
 
-
         _,frame = cap.read()
         time.sleep(1)
-        framelast=frame 
+        self.framelast=frame 
         self.time_1 = time.time()
         self.time_2 = time.time()
-        sleep =time.time()
-    
-        self.count=0
+        self.sleep =time.time()
+        self.start(cap)
+
+    def start(self,cap):
         while self.on:
             while self.video_on or self.sensor_on:
                 self.active= self.exit()
                 _,frame = cap.read()
                 if self.video_on==True:
-                    self.sendVideo(frame)
-                if self.sensor_on==True and (time.time()-sleep)>5: #kansje øk med mer
-                    self.sensor(frame,framelast)
-                    sleep=time.time()
-                framelast=frame
+                    self.send_video(frame)
+                if self.QR_on == True:
+                    b64_string = self.frame_to_string(frame)
+                    self.send_msg("QR",self.name+"QR","office"+str(self.number),None,b64_string,"ttm4115/team_1/project/QR"+str(self.number))
+                if self.sensor_on==True and (time.time()-self.sleep)>5: #kansje øk med mer
+                    self.sensor(frame,self.framelast)
+                    self.sleep=time.time()
+
+                self.framelast=frame
                 quit=self.exit()
                 if quit==False:
                     break
@@ -206,7 +204,7 @@ class StreamVideo:
         cv2.destroyAllWindows()
 
 
-    def sendVideo(self,frame):
+    def send_video(self,frame):
         if self.filter !=None:
             #frame = cv2.flip(frame, 1, 0)
             gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
@@ -217,23 +215,19 @@ class StreamVideo:
                     frame = self.put_glass(self.glass, frame, x, y, w, h)
                 elif self.filter == "dog":
                     frame = self.put_dog_filter(self.dog, frame, x, y, w, h)
-                    
-
         if self.background !=None:
             #frame = cv2.flip(frame, 1, 0)
             frame = self.segmentor.removeBG(frame, self.imgList[self.indexImg], threshold=0.8)
+        b64_string = self.frame_to_string(frame)
+        timestamp=str(int(time.time()*1000))
+        self.send_msg("streamvideo","office"+str(self.number)+"camera",self.sendTo,timestamp,b64_string,"ttm4115/team_1/project/camera"+str(self.number))
+        time.sleep(1 / FPS)
 
-
+    def frame_to_string(self, frame):
         image_bytes = cv2.imencode('.jpg', frame)[1]
         b64_bytes = base64.b64encode(image_bytes)
         b64_string = b64_bytes.decode("utf-8")
-        timestamp=str(int(time.time()*1000))
-        self.count=self.count+1
-        #print("count "+str(self.count)+" tid "+ timestamp)
-        self.send_msg("streamvideo","office"+str(self.number)+"camera",self.sendTo,timestamp,b64_string,"ttm4115/team_1/project/camera"+str(self.number))
-
-        time.sleep(1 / FPS)
-
+        return b64_string
 
     def sensor(self,frame1,frame2):
         diff = cv2.absdiff(frame1,frame2)
