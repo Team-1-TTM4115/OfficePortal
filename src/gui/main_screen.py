@@ -2,8 +2,11 @@ import time
 import tkinter as tk
 from tkinter import *
 
-from clock import Clock
-from news import News
+import cv2
+from PIL import ImageTk
+from src.gui.clock import Clock
+from src.gui.news import News
+from qr.qr_scanner import QrReader
 
 
 class Screen:
@@ -14,6 +17,7 @@ class Screen:
         self.root.withdraw()
         self.frames = {}
         self.frame_container = None
+        self.qr = QrReader()
 
     def configure_startup_screen(self) -> None:
         """
@@ -24,6 +28,8 @@ class Screen:
         # The startup-screen.
         tk.NoDefaultRoot()  # may be redundant or may help clean up memory.
         startup_screen = tk.Tk()
+        startup_screen.overrideredirect(True)
+        startup_screen.wm_attributes("-transparent", True)
         startup_screen.title('Office Portal')
         startup_screen.configure(background='black')
         # startup_screen.overrideredirect(True)
@@ -32,14 +38,14 @@ class Screen:
         welcome_text.config(text='Hasta La Pasta')
         welcome_text.pack(side=LEFT, padx=120, pady=80)
         # Fetches the window size.
-        windowWidth = startup_screen.winfo_reqwidth()
-        windowHeight = startup_screen.winfo_reqheight()
+        window_width = startup_screen.winfo_reqwidth()
+        window_height = startup_screen.winfo_reqheight()
         # Wrongfully gets both half the screen width/height and window width/height
-        positionRight = int(startup_screen.winfo_screenwidth() / 2.5 - windowWidth / 2)
-        positionDown = int(startup_screen.winfo_screenheight() / 2 - windowHeight / 2)
+        position_right = int(startup_screen.winfo_screenwidth() / 2.5 - window_width / 2)
+        position_down = int(startup_screen.winfo_screenheight() / 2 - window_height / 2)
 
         # Positions the window in the center of the page and updates the label.
-        startup_screen.geometry("+{}+{}".format(positionRight, positionDown))
+        startup_screen.geometry("+{}+{}".format(position_right, position_down))
         startup_screen.update()
         # Waits two seconds for the loading screen.
         time.sleep(2)
@@ -56,12 +62,16 @@ class Screen:
         # Creates and configures the main screen.
         root = self.root
         root.deiconify()
-        root.title('Mirror')
+        root.title('Office Portal')
         root.attributes("-fullscreen", True)
         root.configure(background='black')
         frame_container = self.create_grid_frame(root)
+        self.frame_container = frame_container
+        # TODO: Remove from here. GUI controller should be responsible for this.
         self.create_start_page(frame_container)
-        self.create_test_page(frame_container)
+        self.create_video_page(frame_container)
+        self.create_qr_page()
+        self.create_filter_page(frame_container)
         self.show_frame("start_frame")
         return root
 
@@ -81,8 +91,8 @@ class Screen:
         news_tab = News(start_frame)
         news_tab.show_news()
         button = tk.Button(start_frame, text="Go to next",
-                           command=lambda: self.show_frame("test_page"))
-        button.pack(side=LEFT)
+                           command=lambda: self.show_frame("video_frame"))
+        button.place(anchor=CENTER, relx=0.5, rely=0.5)
         self.frames['start_frame'] = start_frame
         start_frame.grid(row=0, column=0, sticky="nsew")
 
@@ -98,13 +108,43 @@ class Screen:
         frame_container.grid_columnconfigure(0, weight=1)
         return frame_container
 
-    def create_test_page(self, root):
-        test_frame = tk.Frame(root, bg='black', )
-        button = tk.Button(test_frame, text="Go to start",
-                           command=lambda: self.show_frame("start_frame"))
-        button.pack(anchor=CENTER)
-        self.frames['test_page'] = test_frame
+    def create_video_page(self, root):
+        test_frame = tk.Frame(root, bg='black')
+        label = tk.Label(test_frame, text="Video page", bg='black', fg='white')
+        button1 = tk.Button(test_frame, text="Go to picture frame",
+                            command=lambda: self.show_frame("start_frame"))
+        button2 = tk.Button(test_frame, text="Go to filter page",
+                            command=lambda: self.show_frame("filter_frame"))
+        button3 = tk.Button(test_frame, text="Go to qr page",
+                            command=lambda: self.show_frame("qr_frame"))
+        label.pack(side=TOP, fill=X)
+        button1.pack(anchor=CENTER)
+        button2.pack(anchor=CENTER)
+        button3.pack(anchor=CENTER)
+        self.frames['video_frame'] = test_frame
         test_frame.grid(row=0, column=0, sticky="nsew", )
+
+    def create_filter_page(self, root):
+        filter_frame = tk.Frame(root, bg='black')
+        label = tk.Label(filter_frame, text="Filter page", bg='black', fg='white')
+        button1 = tk.Button(filter_frame, text="Go to video frame",
+                            command=lambda: self.show_frame("video_frame"))
+
+        label.pack(anchor=N)
+        button1.pack(anchor=CENTER)
+        self.frames['filter_frame'] = filter_frame
+        filter_frame.grid(row=0, column=0, sticky="nsew", )
+
+    def create_qr_page(self):
+        if self.frame_container:
+            filter_frame = tk.Frame(self.frame_container, bg='black')
+            button1 = tk.Button(filter_frame, text="Go to video frame",
+                                command=lambda: self.show_frame("video_frame"))
+            button1.pack(anchor=CENTER)
+            self.frames['qr_frame'] = filter_frame
+            filter_frame.grid(row=0, column=0, sticky="nsew", )
+        else:
+            Exception("Root is not defined")
 
     def show_frame(self, frame_name) -> None:
         """
@@ -131,8 +171,3 @@ class Screen:
         self.configure_startup_screen()
         root = self.create_main_screen()
         root.mainloop()
-
-
-if __name__ == "__main__":
-    screen = Screen()
-    screen.run()

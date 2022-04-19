@@ -1,15 +1,20 @@
-from PIL import Image, ImageTk
-import tkinter as tk
 import argparse
-import datetime
-import cv2
-import os
+import tkinter as tk
 
-class Application:
-    def __init__(self, output_path = "./"):
+import cv2
+from pyzbar import pyzbar
+from PIL import Image, ImageTk
+
+TOPIC_CONNECT = 'ttm4115/team_1/project/connect'
+
+
+# TODO: Remove. Just for testing.
+
+class Camera:
+    def __init__(self, output_path="./"):
         """ Initialize application which uses OpenCV + Tkinter. It displays
             a video stream in a Tkinter window and stores current snapshot on disk """
-        self.vs = cv2.VideoCapture(0) # capture video frames, 0 is your default video camera
+        self.vs = cv2.VideoCapture(0)  # capture video frames, 0 is your default video camera
         self.output_path = output_path  # store output path
         self.current_image = None  # current image from the camera
 
@@ -20,10 +25,6 @@ class Application:
 
         self.panel = tk.Label(self.root)  # initialize image panel
         self.panel.pack(padx=10, pady=10)
-
-        # create a button, that when pressed, will take the current frame and save it to file
-        btn = tk.Button(self.root, text="Snapshot!", command=self.take_snapshot)
-        btn.pack(fill="both", expand=True, padx=10, pady=10)
 
         # start a self.video_loop that constantly pools the video sensor
         # for the most recently read frame
@@ -38,15 +39,9 @@ class Application:
             imgtk = ImageTk.PhotoImage(image=self.current_image)  # convert image for tkinter
             self.panel.imgtk = imgtk  # anchor imgtk so it does not be deleted by garbage-collector
             self.panel.config(image=imgtk)  # show the image
-        self.root.after(30, self.video_loop)  # call the same function after 30 milliseconds
-
-    def take_snapshot(self):
-        """ Take snapshot and save it to the file """
-        ts = datetime.datetime.now() # grab the current timestamp
-        filename = "{}.jpg".format(ts.strftime("%Y-%m-%d_%H-%M-%S"))  # construct filename
-        p = os.path.join(self.output_path, filename)  # construct output path
-        self.current_image.save(p, "JPEG")  # save image as jpeg file
-        print("[INFO] saved {}".format(filename))
+            frame = self.__read_barcodes(frame)
+            cv2.imshow('Barcode/QR code reader', frame)
+        self.root.after(20, self.video_loop)  # call the same function after 30 milliseconds
 
     def destructor(self):
         """ Destroy the root object and release all resources """
@@ -55,13 +50,19 @@ class Application:
         self.vs.release()  # release web camera
         cv2.destroyAllWindows()  # it is not mandatory in this application
 
-# construct the argument parse and parse the arguments
-ap = argparse.ArgumentParser()
-ap.add_argument("-o", "--output", default="./",
-    help="path to output directory to store snapshots (default: current folder")
-args = vars(ap.parse_args())
+    def __read_barcodes(self, frame):
+        barcodes = pyzbar.decode(frame)
+        for barcode in barcodes:
+            x, y, w, h = barcode.rect
 
-# start the app
-print("[INFO] starting...")
-pba = Application(args["output"])
+            barcode_info = barcode.data.decode('utf-8')
+            cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
+
+            self.__mqtt_client.publish(TOPIC_CONNECT, barcode_info)
+            # TODO: Do something after scanning a code. Like trying to connect?
+
+        return frame
+
+
+pba = Camera()
 pba.root.mainloop()
