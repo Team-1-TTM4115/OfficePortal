@@ -2,13 +2,10 @@ import time
 import tkinter as tk
 from tkinter import *
 
-import cv2
-from PIL import Image, ImageTk
-
 from connection_and_streaming.streamReciver import StreamVideoReciver
+from qr.qr_scanner import QrReader
 from src.gui.clock import Clock
 from src.gui.news import News
-from qr.qr_scanner import QrReader
 
 
 class Screen:
@@ -97,9 +94,16 @@ class Screen:
         # Creates the news object on the main screen.
         news_tab = News(start_frame)
         news_tab.show_news()
-        button = tk.Button(start_frame, text="Go to next",
+        button = tk.Button(start_frame, text="Go to video",
                            command=lambda: self.show_frame("video_frame"))
-        button.place(anchor=CENTER, relx=0.5, rely=0.5)
+        button.pack(anchor=CENTER)
+        button2 = tk.Button(start_frame, text="Go to qr",
+                            command=lambda: self.show_frame("qr_frame"))
+        button2.pack(anchor=CENTER)
+        button3 = tk.Button(start_frame, text="Go to waiting",
+                            command=lambda: self.show_frame("waiting_frame"))
+        button3.pack(anchor=CENTER)
+
         self.frames['start_frame'] = start_frame
         start_frame.grid(row=0, column=0, sticky="nsew")
 
@@ -145,6 +149,13 @@ class Screen:
 
         self.frames['waiting_frame'] = waiting_frame
 
+    def destroy_waiting_page(self):
+        """
+        Destroys the waiting page.
+        :return: None
+        """
+        self.frames['waiting_frame'].destroy()
+
     def create_filter_page(self, root):
         """
         Temp filter frame.
@@ -181,6 +192,8 @@ class Screen:
         :return:
         """
         self.qr_reader.destroy_video()
+        qr_frame: tk.Frame = self.frames['qr_frame']
+        qr_frame.destroy()
 
     def show_frame(self, frame_name) -> None:
         """
