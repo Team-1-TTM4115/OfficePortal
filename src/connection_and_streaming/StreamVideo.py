@@ -6,17 +6,18 @@ import cv2
 import numpy as np
 import base64
 from threading import Thread
-import time 
+import time
 import os
 import cvzone
 from cvzone.SelfiSegmentationModule import SelfiSegmentation
 
 MQTT_BROKER = "mqtt.item.ntnu.no"
 MQTT_PORT = 1883
-FPS =30
-sleeping=False
+FPS = 30
+sleeping = False
 
 MQTT_TOPIC_SENSOR = 'ttm4115/team_1/project/sensor'
+
 
 class StreamVideo:
     def on_connect(self, client, userdata, flags, rc):
@@ -30,52 +31,52 @@ class StreamVideo:
             return
         return data
 
-    def on_message(self, client, userdata, msg): 
-        if msg.topic == 'ttm4115/team_1/project/camera'+str(self.number):
-            data =self.loadjson(msg)
-            if data["command"] == "streamstart" and data["reciver"]== self.name+"camera":
+    def on_message(self, client, userdata, msg):
+        if msg.topic == 'ttm4115/team_1/project/camera' + str(self.number):
+            data = self.loadjson(msg)
+            if data["command"] == "streamstart" and data["reciver"] == self.name + "camera":
                 self.video_on = True
-                self.sendTo =data["answer"]
-            elif data["command"] == "streamstop" and data["reciver"]== self.name+"camera":
+                self.sendTo = data["answer"]
+            elif data["command"] == "streamstop" and data["reciver"] == self.name + "camera":
                 self.video_on = False
-                self.filter =None
-                self.background =None
-            elif data["command"] == "fliter_on" and data["reciver"]== self.name+"camera":
-               self.filter = data["answer"]
-            elif data["command"] == "fliter_off" and data["reciver"]== self.name+"camera":
-                self.filter =None
-            elif data["command"] == "backgorund_on" and data["reciver"]== self.name+"camera":
+                self.filter = None
+                self.background = None
+            elif data["command"] == "fliter_on" and data["reciver"] == self.name + "camera":
+                self.filter = data["answer"]
+            elif data["command"] == "fliter_off" and data["reciver"] == self.name + "camera":
+                self.filter = None
+            elif data["command"] == "backgorund_on" and data["reciver"] == self.name + "camera":
                 self.background = data["answer"]
-                if self.background== "easter":
-                    self.indexImg =0
-                elif self.background== "lofoten":
-                    self.indexImg =1
-                elif self.background== "vacay":
-                    self.indexImg =2
-            elif data["command"] == "backgorund_off" and data["reciver"]== self.name+"camera":
-                self.background =None
+                if self.background == "easter":
+                    self.indexImg = 0
+                elif self.background == "lofoten":
+                    self.indexImg = 1
+                elif self.background == "vacay":
+                    self.indexImg = 2
+            elif data["command"] == "backgorund_off" and data["reciver"] == self.name + "camera":
+                self.background = None
         elif msg.topic == 'ttm4115/team_1/project/sensor':
-            data =self.loadjson(msg)
-            if (self.sensor_on == False) and data["reciver"]== self.name+"sensor":
+            data = self.loadjson(msg)
+            if (self.sensor_on == False) and data["reciver"] == self.name + "sensor":
                 if data["command"] == "start":
                     self.office = data["sender"]
-                    self.sensor_on =True
-            if (self.sensor_on == True) and (data["reciver"]== self.name+"sensor") and ((data["sender"]== self.office) ):
+                    self.sensor_on = True
+            if (self.sensor_on == True) and (data["reciver"] == self.name + "sensor") and (
+            (data["sender"] == self.office)):
                 if data["command"] == "stop":
-                    self.sensor_on =False
+                    self.sensor_on = False
 
-    def bts_to_frame(self,b64_string):
-        base64_bytes=b64_string.encode("utf-8")
+    def bts_to_frame(self, b64_string):
+        base64_bytes = b64_string.encode("utf-8")
         buff = np.frombuffer(base64.b64decode(base64_bytes), np.uint8)
         img = cv2.imdecode(buff, cv2.IMREAD_COLOR)
         return img
 
-
-    def put_dog_filter(self,dog, fc, x, y, w, h):
+    def put_dog_filter(self, dog, fc, x, y, w, h):
         face_width = w
         face_height = h
-        #resizing the pictures/filters to fit the face properties
-        dog = cv2.resize(dog, (int(face_width*1.5), int(face_height *1.95)))
+        # resizing the pictures/filters to fit the face properties
+        dog = cv2.resize(dog, (int(face_width * 1.5), int(face_height * 1.95)))
         for i in range(int(face_height * 1.75)):
             for j in range(int(face_width * 1.5)):
                 for k in range(3):
@@ -99,8 +100,7 @@ class StreamVideo:
                         fc[y + i - int(0.40 * face_height)][x + j][k] = hat[i][j][k]
         return fc
 
-
-    def put_glass(self,glass, fc, x, y, w, h):
+    def put_glass(self, glass, fc, x, y, w, h):
         face_width = w
         face_height = h
 
@@ -117,26 +117,25 @@ class StreamVideo:
         return fc
 
     def __init__(self):
-        self.number =1
-        self.name= "office"+str(self.number)
-        self.sendTo =None
-        self.active =False
-        self.on=True
-        self.sensor_on =False
-        self.video_on =False
+        self.number = 1
+        self.name = "office" + str(self.number)
+        self.sendTo = None
+        self.active = False
+        self.on = True
+        self.sensor_on = False
+        self.video_on = False
 
-        #Fliter
+        # Fliter
         self.face = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
-        self.hat=cv2.imread(r'C:\Users\ingeb\Documents\universtiet\NTNU\tredje\var\Desgin\project_design\OfficePortal\src\I+E\hat.png')
-        self.glass=cv2.imread(r'C:\Users\ingeb\Documents\universtiet\NTNU\tredje\var\Desgin\project_design\OfficePortal\src\I+E\glasses.png')
-        self.dog= cv2.imread(r'C:\Users\ingeb\Documents\universtiet\NTNU\tredje\var\Desgin\project_design\OfficePortal\src\I+E\dog.png')
-        self.filter =None
+        self.hat = cv2.imread(
+            r'C:\Users\ingeb\Documents\universtiet\NTNU\tredje\var\Desgin\project_design\OfficePortal\src\I+E\hat.png')
+        self.glass = cv2.imread(
+            r'C:\Users\ingeb\Documents\universtiet\NTNU\tredje\var\Desgin\project_design\OfficePortal\src\I+E\glasses.png')
+        self.dog = cv2.imread(
+            r'C:\Users\ingeb\Documents\universtiet\NTNU\tredje\var\Desgin\project_design\OfficePortal\src\I+E\dog.png')
+        self.filter = None
 
-        #Background
-
-        
-
-
+        # Background
 
         # get the logger object for the component
         self._logger = logging.getLogger(__name__)
@@ -145,13 +144,13 @@ class StreamVideo:
 
         # create a new MQTT client
         self._logger.debug("Connecting to MQTT broker {} at port {}".format(MQTT_BROKER, MQTT_PORT))
-        self.mqtt_client = MqttClient("StreamVideo"+self.name)
+        self.mqtt_client = MqttClient("StreamVideo" + self.name)
         # callback methods
         self.mqtt_client.on_connect = self.on_connect
         self.mqtt_client.on_message = self.on_message
         # Connect to the broker
         self.mqtt_client.connect(MQTT_BROKER, MQTT_PORT)
-        self.mqtt_client.subscribe("ttm4115/team_1/project/camera"+str(self.number))
+        self.mqtt_client.subscribe("ttm4115/team_1/project/camera" + str(self.number))
         self.mqtt_client.subscribe(MQTT_TOPIC_SENSOR)
         # start the internal loop to process MQTT messages
         thread = Thread(target=self.mqtt_client.loop_start())
@@ -159,100 +158,97 @@ class StreamVideo:
 
         cap = cv2.VideoCapture(0)
 
-        #Background
-        #cap.set(3, 640)
-        #cap.set(4,480)
+        # Background
+        # cap.set(3, 640)
+        # cap.set(4,480)
         self.segmentor = SelfiSegmentation()
-        #fpsReader = cvzone.FPS()
-        self.listImg = os.listdir(r"C:\Users\ingeb\Documents\universtiet\NTNU\tredje\var\Desgin\project_design\OfficePortal\src\I+E\BackgroundFilters")
-        listImg = os.listdir(r"C:\Users\ingeb\Documents\universtiet\NTNU\tredje\var\Desgin\project_design\OfficePortal\src\I+E\BackgroundFilters")
-        #print(listImg)
+        # fpsReader = cvzone.FPS()
+        self.listImg = os.listdir(
+            r"C:\Users\ingeb\Documents\universtiet\NTNU\tredje\var\Desgin\project_design\OfficePortal\src\I+E\BackgroundFilters")
+        listImg = os.listdir(
+            r"C:\Users\ingeb\Documents\universtiet\NTNU\tredje\var\Desgin\project_design\OfficePortal\src\I+E\BackgroundFilters")
+        # print(listImg)
         self.imgList = []
-        self.background =None
+        self.background = None
 
         for imgPath in listImg:
-            path= 'C:/Users/ingeb/Documents/universtiet/NTNU/tredje/var/Desgin/project_design/OfficePortal/src/I+E/BackgroundFilters'
-            imagePath= os.path.join(path, imgPath)
+            path = 'C:/Users/ingeb/Documents/universtiet/NTNU/tredje/var/Desgin/project_design/OfficePortal/src/I+E/BackgroundFilters'
+            imagePath = os.path.join(path, imgPath)
             img = cv2.imread(imagePath)
             self.imgList.append(img)
 
-
-        _,frame = cap.read()
+        _, frame = cap.read()
         time.sleep(1)
-        framelast=frame 
+        framelast = frame
         self.time_1 = time.time()
         self.time_2 = time.time()
-        sleep =time.time()
-    
-        self.count=0
+        sleep = time.time()
+
+        self.count = 0
         while self.on:
             while self.video_on or self.sensor_on:
-                self.active= self.exit()
-                _,frame = cap.read()
-                if self.video_on==True:
+                self.active = self.exit()
+                _, frame = cap.read()
+                if self.video_on == True:
                     self.sendVideo(frame)
-                if self.sensor_on==True and (time.time()-sleep)>5: #kansje øk med mer
-                    self.sensor(frame,framelast)
-                    sleep=time.time()
-                framelast=frame
-                quit=self.exit()
-                if quit==False:
+                if self.sensor_on == True and (time.time() - sleep) > 5:  # kansje øk med mer
+                    self.sensor(frame, framelast)
+                    sleep = time.time()
+                framelast = frame
+                quit = self.exit()
+                if quit == False:
                     break
 
-                
-            self.on=self.exit()
+            self.on = self.exit()
         self.mqtt_client.loop_stop()
-        cap.release()        
+        cap.release()
         cv2.destroyAllWindows()
 
-
-    def sendVideo(self,frame):
-        if self.filter !=None:
-            #frame = cv2.flip(frame, 1, 0)
+    def sendVideo(self, frame):
+        if self.filter != None:
+            # frame = cv2.flip(frame, 1, 0)
             gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-            fl = self.face.detectMultiScale(gray,1.19,7)
+            fl = self.face.detectMultiScale(gray, 1.19, 7)
             for (x, y, w, h) in fl:
                 if (self.filter == "hat_glasses"):
                     frame = self.put_hat(self.hat, frame, x, y, w, h)
                     frame = self.put_glass(self.glass, frame, x, y, w, h)
                 elif self.filter == "dog":
                     frame = self.put_dog_filter(self.dog, frame, x, y, w, h)
-                    
 
-        if self.background !=None:
-            #frame = cv2.flip(frame, 1, 0)
+        if self.background != None:
+            # frame = cv2.flip(frame, 1, 0)
             frame = self.segmentor.removeBG(frame, self.imgList[self.indexImg], threshold=0.8)
-
 
         image_bytes = cv2.imencode('.jpg', frame)[1]
         b64_bytes = base64.b64encode(image_bytes)
         b64_string = b64_bytes.decode("utf-8")
-        timestamp=str(int(time.time()*1000))
-        self.count=self.count+1
-        #print("count "+str(self.count)+" tid "+ timestamp)
-        self.send_msg("streamvideo","office"+str(self.number)+"camera",self.sendTo,timestamp,b64_string,"ttm4115/team_1/project/camera"+str(self.number))
+        timestamp = str(int(time.time() * 1000))
+        self.count = self.count + 1
+        # print("count "+str(self.count)+" tid "+ timestamp)
+        self.send_msg("streamvideo", "office" + str(self.number) + "camera", self.sendTo, timestamp, b64_string,
+                      "ttm4115/team_1/project/camera" + str(self.number))
 
         time.sleep(1 / FPS)
 
-
-    def sensor(self,frame1,frame2):
-        diff = cv2.absdiff(frame1,frame2)
-        gray= cv2.cvtColor(diff,cv2.COLOR_BGR2GRAY)
-        blur = cv2.GaussianBlur(gray,(5,5),0)
-        _, threshHold= cv2.threshold(blur, 20,255,cv2.THRESH_BINARY)
-        dilated =cv2.dilate(threshHold,None,iterations=3)
-        contours,_= cv2.findContours(dilated,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
-        movent=False
+    def sensor(self, frame1, frame2):
+        diff = cv2.absdiff(frame1, frame2)
+        gray = cv2.cvtColor(diff, cv2.COLOR_BGR2GRAY)
+        blur = cv2.GaussianBlur(gray, (5, 5), 0)
+        _, threshHold = cv2.threshold(blur, 20, 255, cv2.THRESH_BINARY)
+        dilated = cv2.dilate(threshHold, None, iterations=3)
+        contours, _ = cv2.findContours(dilated, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+        movent = False
         for contour in contours:
-            if cv2.contourArea(contour)>700:
-                movent=True
-        frame1=frame2
+            if cv2.contourArea(contour) > 700:
+                movent = True
+        frame1 = frame2
         self.time_2 = time.time()
-        if (self.time_2 - self.time_1)>1:
+        if (self.time_2 - self.time_1) > 1:
             self.time_1 = time.time()
-            if movent==True:
-                timestamp=str(int(time.time()*1000))
-                self.send_msg("movement",self.name+"sensor",self.office,timestamp,None,MQTT_TOPIC_SENSOR)
+            if movent == True:
+                timestamp = str(int(time.time() * 1000))
+                self.send_msg("movement", self.name + "sensor", self.office, timestamp, None, MQTT_TOPIC_SENSOR)
 
     def exit(self):
         try:
@@ -262,22 +258,11 @@ class StreamVideo:
                 return True
         except:
             pass
-        
-    def send_msg(self,msg,sender,reciver,timestamp,answer,where):
-        command = {"command": msg, "sender": sender, "reciver": reciver,"time": timestamp,"answer": answer} 
+
+    def send_msg(self, msg, sender, reciver, timestamp, answer, where):
+        command = {"command": msg, "sender": sender, "reciver": reciver, "time": timestamp, "answer": answer}
         payload = json.dumps(command)
         self.mqtt_client.publish(where, payload)
-
-
-
-
-
-
-
-
-
-
-
 
 
 debug_level = logging.DEBUG

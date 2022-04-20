@@ -2,11 +2,10 @@ import time
 import tkinter as tk
 from tkinter import *
 
-import cv2
-from PIL import Image, ImageTk
+from connection_and_streaming.streamReciver import StreamVideoReciver
+from qr.qr_scanner import QrReader
 from src.gui.clock import Clock
 from src.gui.news import News
-from qr.qr_scanner import QrReader
 
 
 class Screen:
@@ -73,9 +72,10 @@ class Screen:
         self.frame_container = frame_container
         # TODO: Remove from here. GUI controller should be responsible for this.
         self.create_start_page(frame_container)
-        self.create_video_page(frame_container)
-        self.create_qr_page()
+        self.create_video_page()
+        # self.create_qr_page()
         self.create_filter_page(frame_container)
+        self.create_waiting_page()
         self.show_frame("start_frame")
         return root
 
@@ -94,9 +94,16 @@ class Screen:
         # Creates the news object on the main screen.
         news_tab = News(start_frame)
         news_tab.show_news()
-        button = tk.Button(start_frame, text="Go to next",
+        button = tk.Button(start_frame, text="Go to video",
                            command=lambda: self.show_frame("video_frame"))
-        button.place(anchor=CENTER, relx=0.5, rely=0.5)
+        button.pack(anchor=CENTER)
+        button2 = tk.Button(start_frame, text="Go to qr",
+                            command=lambda: self.show_frame("qr_frame"))
+        button2.pack(anchor=CENTER)
+        button3 = tk.Button(start_frame, text="Go to waiting",
+                            command=lambda: self.show_frame("waiting_frame"))
+        button3.pack(anchor=CENTER)
+
         self.frames['start_frame'] = start_frame
         start_frame.grid(row=0, column=0, sticky="nsew")
 
@@ -112,23 +119,49 @@ class Screen:
         frame_container.grid_columnconfigure(0, weight=1)
         return frame_container
 
-    def create_video_page(self, root):
-        test_frame = tk.Frame(root, bg='black')
-        label = tk.Label(test_frame, text="Video page", bg='black', fg='white')
-        button1 = tk.Button(test_frame, text="Go to picture frame",
+    def create_video_page(self):
+        """
+        Temp video frame.
+        :return:
+        """
+        video_frame = tk.Frame(self.frame_container, bg='black')
+        self.frames['video_frame'] = video_frame
+        video_frame.grid(row=0, column=0, sticky="nsew", )
+
+        canvas = Canvas(video_frame, bg='black', borderwidth=0)
+        canvas.pack(fill=BOTH, expand=YES)
+        StreamVideoReciver(canvas, self.width, self.height)
+
+    def create_waiting_page(self):
+        """
+        Creates the waiting page.
+        :return: None
+        """
+        waiting_frame = tk.Frame(self.frame_container, bg='black')
+        waiting_frame.grid(row=0, column=0, sticky="nsew", )
+
+        waiting_label = tk.Label(waiting_frame, text="Waiting to connect", bg='black', fg='white',
+                                 font=("Helvetica", 40))
+        waiting_label.place(x=self.width / 2, y=self.height / 2, anchor=CENTER)
+        button1 = tk.Button(waiting_frame, text="Go to start frame",
                             command=lambda: self.show_frame("start_frame"))
-        button2 = tk.Button(test_frame, text="Go to filter page",
-                            command=lambda: self.show_frame("filter_frame"))
-        button3 = tk.Button(test_frame, text="Go to qr page",
-                            command=lambda: self.show_frame("qr_frame"))
-        label.pack(side=TOP, fill=X)
         button1.pack(anchor=CENTER)
-        button2.pack(anchor=CENTER)
-        button3.pack(anchor=CENTER)
-        self.frames['video_frame'] = test_frame
-        test_frame.grid(row=0, column=0, sticky="nsew", )
+
+        self.frames['waiting_frame'] = waiting_frame
+
+    def destroy_waiting_page(self):
+        """
+        Destroys the waiting page.
+        :return: None
+        """
+        self.frames['waiting_frame'].destroy()
 
     def create_filter_page(self, root):
+        """
+        Temp filter frame.
+        :param root:
+        :return:
+        """
         filter_frame = tk.Frame(root, bg='black')
         label = tk.Label(filter_frame, text="Filter page", bg='black', fg='white')
         button1 = tk.Button(filter_frame, text="Go to video frame",
@@ -140,9 +173,12 @@ class Screen:
         filter_frame.grid(row=0, column=0, sticky="nsew", )
 
     def create_qr_page(self):
+        """
+        Creates the qr page and starts the capture of the video.
+        :return: None
+        """
         if self.frame_container:
             qr_frame = tk.Frame(self.frame_container, bg='black')
-            print(self.width, self.height)
             self.frames['qr_frame'] = qr_frame
             qr_frame.grid(row=0, column=0, sticky="nsew")
             self.qr_reader = QrReader(qr_frame, self.width, self.height)
@@ -151,7 +187,13 @@ class Screen:
             Exception("Frame container is not defined")
 
     def destroy_qr_page(self):
+        """
+        Destroys the qr page and releases the camera.
+        :return:
+        """
         self.qr_reader.destroy_video()
+        qr_frame: tk.Frame = self.frames['qr_frame']
+        qr_frame.destroy()
 
     def show_frame(self, frame_name) -> None:
         """
@@ -160,7 +202,6 @@ class Screen:
         :return: None
         """
         frame = self.frames[frame_name]
-        print(frame)
         frame.tkraise()
 
     def set_background_img(self):
