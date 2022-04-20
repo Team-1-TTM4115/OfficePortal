@@ -74,7 +74,7 @@ class Screen:
         self.create_start_page(frame_container)
         self.create_video_page()
         # self.create_qr_page()
-        self.create_filter_page(frame_container)
+        self.create_filter_page()
         self.create_waiting_page()
         self.show_frame("start_frame")
         return root
@@ -94,8 +94,8 @@ class Screen:
         # Creates the news object on the main screen.
         news_tab = News(start_frame)
         news_tab.show_news()
-        button = tk.Button(start_frame, text="Go to video",
-                           command=lambda: self.show_frame("video_frame"))
+        button = tk.Button(start_frame, text="Go to filter",
+                           command=lambda: self.show_frame("filter_frame"))
         button.pack(anchor=CENTER)
         button2 = tk.Button(start_frame, text="Go to qr",
                             command=lambda: self.show_frame("qr_frame"))
@@ -156,19 +156,26 @@ class Screen:
         """
         self.frames['waiting_frame'].destroy()
 
-    def create_filter_page(self, root):
+    def create_filter_page(self):
         """
         Temp filter frame.
         :param root:
         :return:
         """
-        filter_frame = tk.Frame(root, bg='black')
-        label = tk.Label(filter_frame, text="Filter page", bg='black', fg='white')
-        button1 = tk.Button(filter_frame, text="Go to video frame",
-                            command=lambda: self.show_frame("video_frame"))
+        filters = ['dog', 'easter', 'misc', 'mountain']
+        filter_frame = tk.Frame(self.frame_container, bg='black')
+        filter_container = tk.Frame(filter_frame, bg='black')
+        filter_container.place(x=self.width / 2, y=self.height / 6, anchor=CENTER)
+        current = 'misc'
 
-        label.pack(anchor=N)
-        button1.pack(anchor=CENTER)
+        for index in range(len(filters)):
+            if current == filters[index]:
+                button1 = tk.Label(filter_container, text=filters[index], bg='grey', fg='white', font=("Helvetica", 40),
+                                   borderwidth=10, relief=GROOVE,)
+                button1.grid(row=0, column=index, padx=10, pady=10)
+            else:
+                button1 = tk.Label(filter_container, text=filters[index], bg='grey', fg='white', font=("Helvetica", 40))
+                button1.grid(row=0, column=index, padx=10, pady=10)
         self.frames['filter_frame'] = filter_frame
         filter_frame.grid(row=0, column=0, sticky="nsew", )
 

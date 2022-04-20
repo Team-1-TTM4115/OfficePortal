@@ -35,6 +35,8 @@ class GuiController:
         pass
 
     def show_filter_menu(self):
+        # self.screen.create_filter_page()
+        self.screen.show_frame('filter_frame')
         pass
 
     def close_filter_menu(self):
