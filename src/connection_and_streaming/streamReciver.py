@@ -3,7 +3,7 @@ import logging
 import json
 from tkinter.constants import NW
 
-import keyboard
+
 from threading import Thread
 import base64
 import numpy as np

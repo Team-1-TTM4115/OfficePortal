@@ -5,6 +5,7 @@ from tkinter import NW
 import cv2
 from PIL import Image, ImageTk
 from pyzbar import pyzbar
+from pyzbar.pyzbar import decode
 
 from src.gui.camera import Camera
 from src.mqtt_client import MqttClient
@@ -24,7 +25,7 @@ class QrReader:
         self.office_name = office_name
 
     def __read_barcodes(self, frame):
-        barcodes = pyzbar.decode(frame)
+        barcodes = decode(frame)
         for barcode in barcodes:
             x, y, w, h = barcode.rect
 

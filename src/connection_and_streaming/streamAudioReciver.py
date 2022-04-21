@@ -1,7 +1,7 @@
 import time
 import logging
 import json
-import keyboard
+
 from threading import Thread
 import base64
 import numpy as np

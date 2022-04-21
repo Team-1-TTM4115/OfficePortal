@@ -3,7 +3,7 @@ import stmpy
 import logging
 import json
 import time
-# import keyboard
+# 
 
 MQTT_BROKER = "mqtt.item.ntnu.no"
 MQTT_PORT = 1883

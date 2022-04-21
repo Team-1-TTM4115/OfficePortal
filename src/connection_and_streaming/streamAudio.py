@@ -1,7 +1,7 @@
 from mqtt_client import MqttClient
 import logging
 import json
-import keyboard
+
 import time 
 import pyaudio
 from threading import Thread

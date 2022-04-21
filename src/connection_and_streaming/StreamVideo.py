@@ -1,7 +1,7 @@
 from mqtt_client import MqttClient
 import logging
 import json
-import keyboard
+
 import cv2
 import numpy as np
 import base64
