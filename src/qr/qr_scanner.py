@@ -11,13 +11,13 @@ TOPIC_CONNECT = 'ttm4115/team_1/project/connect'
 
 
 class QrReader:
-    def __init__(self, frame, heigth, width):
+    def __init__(self, frame, height, width):
         self.__mqtt_client = MqttClient("QrReader")
         self.cap = None
         self.gui_window = frame
         self.image = None
         self.canvas = None
-        self.height = heigth
+        self.height = height
         self.width = width
 
     def __read_barcodes(self, frame):
