@@ -6,6 +6,7 @@ import cv2
 from PIL import Image, ImageTk
 from pyzbar import pyzbar
 
+from src.gui.camera import Camera
 from src.mqtt_client import MqttClient
 
 TOPIC_CONNECT = 'ttm4115/team_1/project/connect'
@@ -18,7 +19,7 @@ class QrReader:
         self.gui_window = frame
         self.image = None
         self.canvas = None
-        self.height = height
+        self.height = heigth
         self.width = width
         self.office_name = office_name
 
@@ -36,7 +37,7 @@ class QrReader:
 
     def capture_video(self):
         # TODO: Integrate into gui somehow
-        camera = cv2.VideoCapture(0)
+        camera = Camera(0)
         self.cap = camera
 
         self.canvas = tkinter.Canvas(self.gui_window, bg='black', borderwidth=0)

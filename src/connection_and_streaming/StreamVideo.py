@@ -11,6 +11,8 @@ import os
 import cvzone
 from cvzone.SelfiSegmentationModule import SelfiSegmentation
 
+from src.gui.camera import Camera
+
 MQTT_BROKER = "mqtt.item.ntnu.no"
 MQTT_PORT = 1883
 FPS =30
@@ -159,7 +161,7 @@ class StreamVideo:
         thread = Thread(target=self.mqtt_client.loop_start())
         thread.start()
 
-        cap = cv2.VideoCapture(0)
+        cap = Camera(0)
         self.segmentor = SelfiSegmentation()
         self.listImg = os.listdir(r"C:\Users\ingeb\Documents\universtiet\NTNU\tredje\var\Desgin\project_design\OfficePortal\src\I+E\BackgroundFilters")
         listImg = os.listdir(r"C:\Users\ingeb\Documents\universtiet\NTNU\tredje\var\Desgin\project_design\OfficePortal\src\I+E\BackgroundFilters")
