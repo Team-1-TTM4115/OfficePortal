@@ -1,19 +1,22 @@
 import stmpy
 from voice_recognition import VoiceRecognition, text_to_number
-import text_to_speech
 
 VOICE_COMMANDS = [
-    {"command": "open menu", "feedback": "opening menu"},
-    {"command": "close menu", "feedback": "closing menu"},
-    {"command": "select menu item number", "feedback": "selecting menu item"},
+    {"command": ["open menu", "change_session_view"]},
+    {"command": ["close menu", "change_session_view"]},
+    {"command": ["remove background filter", "change_session_view"]},
+    {"command": ["remove face filter", "change_session_view"]},
+    {"command": ["apply background filter number", "choose_filter"]},
+    {"command": ["apply face filter number", "choose_filter"]},
+    {"command": ["change connection", "change_connection"]},
 ]
 
-class VoiceSTM:
+class VoiceCmdSTM:
     def __init__(self):
         self.vc = VoiceRecognition()
 
-    def on_command_found(self, command, feedback):
-        self.stm.send("cmd_found", kwargs={"command": command, "feedback": feedback})
+    def on_command_found(self, command, trigger):
+        self.stm.send("cmd_found", kwargs={"command": command, "trigger": trigger})
 
     def on_command_not_found(self, e_msg):
         self.stm.send("cmd_not_found", kwargs={"e_msg": e_msg})
@@ -24,59 +27,62 @@ class VoiceSTM:
             if response["success"]:
                 found = False
                 for command in VOICE_COMMANDS:
-                    if command["command"] in response["recording"]:
+                    if command["command"][0] in response["recording"].lower():
                         found = True
-                        recognized_command = command["command"]
-                        if command["command"] == "select menu item number":
+                        recognized_command = command["command"][0]
+                        if recognized_command == "apply background filter number":
                             item_num = text_to_number(
-                                response["recording"], "select menu item number "
+                                response["recording"], "apply background filter number "
                             )
-                            recognized_command = f"select menu item number {item_num}"
-                        self.on_command_found(recognized_command, command["feedback"])
+                            recognized_command = [recognized_command, item_num]
+                        elif recognized_command == "apply face filter number":
+                            item_num = text_to_number(
+                                response["recording"], "apply face filter number "
+                            )
+                            recognized_command = [recognized_command, item_num]
+                        self.on_command_found(recognized_command, command["command"][1])
                 if not found:
                     self.on_command_not_found(f"Unknown command: {response['recording']}")
             else:
-                print(response["exception"])
                 self.on_command_not_found("I did not quite catch that. Please try again.")
         except Exception as e:
-            print(e)
-            self.on_command_not_found(f"I was not able to process your command")
+            self.on_command_not_found(f"I was not able to process your command: {e}")
 
-    def voice_cmd_feedback(self, feedback):        
-        text_to_speech.speak(feedback)
-
-    def send_command(self, command, feedback):
+    def send_command(self, command, trigger):
         # TODO: send command to the other STM
         print(f"Command used: {command}")
-        self.stm.send("known_cmd_voice_feedback", kwargs={"feedback": command})
+        print(f"Sending trigger: {trigger} to STM with command {command}")
+        self.stm.send(trigger, "controller", kwargs={"command": command})
+        self.stm.send("continue_listening")
 
     def send_err_msg(self, e_msg):
         # TODO: send error message to the other STM
-        self.stm.send("unknown_cmd_voice_feedback", kwargs={"feedback": e_msg})
+        print(e_msg)
+        self.stm.send("continue_listening")
 
-voice_stm = VoiceSTM()
+voice_cmd_stm = VoiceCmdSTM()
 
 # Transitions
 t0 = {"source": "initial", "target": "idle"}
 t1 = {"trigger": "start_listening", "source": "idle", "target": "listening"}
-t2 = {"trigger": "cmd_found", "source": "listening", "target": "known_cmd", "effect": "send_command(*)"}
-t3 = {"trigger": "cmd_not_found", "source": "listening", "target": "unknown_cmd", "effect": "send_err_msg(*)"}
-t4 = {"trigger": "known_cmd_voice_feedback", "source": "known_cmd", "target": "speaking"}
-t5 = {"trigger": "unknown_cmd_voice_feedback", "source": "unknown_cmd", "target": "speaking"}
-t6 = {"trigger": "done", "source": "speaking", "target": "listening"}
+t2 = {"trigger": "stop_listening", "source": "listening", "target": "idle"}
+t3 = {"trigger": "cmd_found", "source": "listening", "target": "known_cmd", "effect": "send_command(*)"}
+t4 = {"trigger": "cmd_not_found", "source": "listening", "target": "unknown_cmd", "effect": "send_err_msg(*)"}
+t5 = {"trigger": "continue_listening", "source": "known_cmd", "target": "listening"}
+t6 = {"trigger": "continue_listening", "source": "unknown_cmd", "target": "listening"}
 
 # States
 s0 = {"name": "initial"}
-s1 = {"name": "listening", "entry": "voice_cmd_listening"}
-s2 = {"name": "known_cmd"}
-s3 = {"name": "unknown_cmd"}
-s4 = {"name": "speaking", "do": "voice_cmd_feedback(*)"}
+s1 = {"name": "listening", "entry": "voice_cmd_listening()"}
+s2 = {"name": "known_cmd", "stop_listening": "defer"}
+s3 = {"name": "unknown_cmd", "stop_listening": "defer"}
 
-machine =  stmpy.Machine(name="voice_stm", transitions=[t0, t1, t2, t3, t4, t5, t6], states=[s0, s1, s2, s3, s4], obj=voice_stm)
-voice_stm.stm = machine
+machine =  stmpy.Machine(name="voice_stm", transitions=[t0, t1, t2, t3, t4, t5, t6], states=[s0, s1, s2, s3], obj=voice_cmd_stm)
+voice_cmd_stm.stm = machine
 
 driver = stmpy.Driver()
 driver.add_machine(machine)
 driver.start()
 
 driver.send("start_listening", "voice_stm")
+# driver.send("stop_listening", "voice_stm") - to turn off voice listening
