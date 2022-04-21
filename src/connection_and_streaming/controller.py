@@ -360,20 +360,15 @@ class ControllerComponent:
     def turn_microphone_off(self):
         self.send_msg("streamstop","Controller",self.officeName+"audio",self.connection+"reciver","ttm4115/team_1/project/audio"+self.officeName[-1])
         print("turn_reciver_off")
-
+        
     def enter_gallery_mode(self):
-        pass
+        self.stm_driver.send("enter_gallery_mode", "gui_stm")
     def enter_waiting_mode(self):
-        pass
+        self.stm_driver.send("enter_waiting_mode", "gui_stm")
     def enter_qr_scanner(self):
-        pass
+        self.stm_driver.send("enter_qr_scanner", "gui_stm")
     def enter_video_call(self):
-        pass
-
-    def send_start_qr(self):
-        print("jipp")
-        pass
-
+        self.stm_driver.send("enter_video_call", "gui_stm")
     def start_listening(self):
         self.stm_driver.send("start_listening", "voice_stm")
     def stopp_listening(self):
@@ -381,9 +376,9 @@ class ControllerComponent:
 
     def trigger_change(self,command):
         if command == "open menu":
-            pass
+            self.stm_driver.send("open menu", "gui_stm")
         elif command == "close menu":
-            pass
+            self.stm_driver.send("close menu", "gui_stm")
 
     def apply_filter(self,command):
         if command[1] ==1:
