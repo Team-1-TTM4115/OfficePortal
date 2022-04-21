@@ -47,13 +47,13 @@ class ControllerLogic:
             "trigger": "partner_left_connection",
             "source": "connected",
             "target": "not_connected",
-            "effect": "sensor_off; turn_on_microphone; log_in_not_connected",
+            "effect": "sensor_off; start_listening; log_in_not_connected",
         }
         t4 = { 
             "trigger": "movement_detected",
             "source": "connected",
             "target": "waiting_for_partner",
-            "effect": "start_timer('idle_timeout', 60000); turn_on_microphone; enter_waiting_mode; send_partner_active; start_timer('resend_timer', 20000); log_in_waiting_for_partner",
+            "effect": "start_timer('idle_timeout', 60000); start_listening; enter_waiting_mode; send_partner_active; start_timer('resend_timer', 20000); log_in_waiting_for_partner",
         }
 
         t5 = { 
@@ -81,7 +81,7 @@ class ControllerLogic:
             "trigger": "idle_timeout",
             "source": "active_session",
             "target": "connected",
-            "effect": "send_I_am_idle; enter_gallery_mode; turn_microphone_off; log_in_connected",
+            "effect": "send_I_am_idle; enter_gallery_mode; stopp_listening; log_in_connected",
         }
         t9 = {
             "trigger": "partner_idle",
@@ -137,7 +137,7 @@ class ControllerLogic:
         # den hadde en connection(dette skal ikke skje med korrect bruk)
         if self.component.connection==None:
             self._logger.info("state=not_connected")
-            self.turn_on_microphone()
+            self.start_listening()
             return"not_connected"
         else:
             self._logger.info("state=connected")
@@ -163,6 +163,11 @@ class ControllerLogic:
         self.component.turn_on_microphone()
     def turn_microphone_off(self):
         self.component.turn_microphone_off()
+
+    def start_listening(self):
+        self.component.start_listening()
+    def stopp_listening(self):
+        self.component.stopp_listening()
 
     def turn_on_camera(self):
         self.component.turn_on_camera()
@@ -211,10 +216,10 @@ class ControllerLogic:
 
     def trigger_change(self,command):
         self.component.trigger_change(command)
-        pass
+
     def apply_filter(self,command):
         self.component.apply_filter(command)
-        pass
+
 
 class ControllerComponent:
     def on_connect(self, client, userdata, flags, rc):
@@ -356,11 +361,16 @@ class ControllerComponent:
     def enter_waiting_mode(self):
         pass
     def enter_qr_scanner(self):
-
         pass
     def enter_video_call(self):
         pass
+
     def send_start_qr(self):
+        pass
+
+    def start_listening(self):
+        pass
+    def stopp_listening(self):
         pass
 
     def trigger_change(self,command):
