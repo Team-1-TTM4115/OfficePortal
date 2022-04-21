@@ -9,8 +9,8 @@ import base64
 import numpy as np
 import cv2
 from PIL import Image, ImageTk
-
 from mqtt_client import MqttClient
+
 
 FPS = 30
 CHANNELS = 1
