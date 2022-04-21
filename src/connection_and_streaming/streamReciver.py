@@ -25,7 +25,7 @@ class StreamVideoReciver():
     def on_connect(self, client, userdata, flagSs, rc):
         self._logger.debug("MQTT connected to {}".format(client))
 
-    def loadjson(self, msg):
+    def load_json(self, msg):
         try:
             data = json.loads(msg.payload.decode("utf-8"))
         except Exception as err:
@@ -35,29 +35,27 @@ class StreamVideoReciver():
 
     def on_message(self, client, userdata, msg):
         if msg.topic == 'ttm4115/team_1/project/reciver':
-            data = self.loadjson(msg)
-            if data["command"] == "streamstart" and data["reciver"] == self.name:
-                self.recivefrom = data["answer"]
-                self.mqtt_client.subscribe("ttm4115/team_1/project/camera" + self.recivefrom[-1])
-                self.active = True
-            elif data["command"] == "streamstop" and data["reciver"] == self.name:
-                self.active = False
-                self.mqtt_client.unsubscribe("ttm4115/team_1/project/camera" + self.recivefrom[-1])
-                self.recivefrom = None
-                self.framesaudio = []
+            data =self.load_json(msg)
+            if data["command"] == "streamstart" and data["reciver"]== self.name:
+                self.recivefrom =data["answer"]
+                self.mqtt_client.subscribe("ttm4115/team_1/project/camera"+self.recivefrom[-1])
+                self.active =True
+            elif data["command"] == "streamstop" and data["reciver"]== self.name:
+                self.active =False  
+                self.mqtt_client.unsubscribe("ttm4115/team_1/project/camera"+self.recivefrom[-1])
+                self.recivefrom =None
+                self.framesaudio =[]
                 cv2.destroyAllWindows()
         if self.recivefrom != None:
-            if msg.topic == "ttm4115/team_1/project/camera" + self.recivefrom[-1]:  # and not_sleep
-                data = self.loadjson(msg)
-                if data["command"] == "streamvideo" and data["reciver"] == self.name and self.active == True:
-                    frame_video = self.bts_to_frame(data["answer"])
-                    self.frame = frame_video
-                    self.start_stream()
-                    # cv2.imshow("webcam", framevideo)
-                    # cv2.waitKey(20)
-
-    def bts_to_frame(self, b64_string):
-        base64_bytes = b64_string.encode("utf-8")
+            if msg.topic == "ttm4115/team_1/project/camera"+self.recivefrom[-1] :#and not_sleep
+                data =self.load_json(msg)
+                if data["command"] == "streamvideo" and data["reciver"]== self.name and self.active ==True:
+                    framevideo=self.bts_to_frame(data["answer"])
+                    cv2.imshow("webcam",framevideo)
+                    cv2.waitKey(20)
+                
+    def bts_to_frame(self,b64_string):
+        base64_bytes=b64_string.encode("utf-8")
         buff = np.frombuffer(base64.b64decode(base64_bytes), np.uint8)
         img = cv2.imdecode(buff, cv2.IMREAD_COLOR)
         return img

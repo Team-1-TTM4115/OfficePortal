@@ -243,7 +243,7 @@ class ControllerComponent:
     def on_connect(self, client, userdata, flags, rc):
         self._logger.debug('MQTT connected to {}'.format(client))
 
-    def loadjson(self, msg):
+    def load_json(self, msg):
         try:
             data = json.loads(msg.payload.decode("utf-8"))
         except Exception as err:
@@ -253,11 +253,11 @@ class ControllerComponent:
 
     def on_message(self, client, userdata, msg):
         if msg.topic == "ttm4115/team_1/project/sensor":
-            data =self.loadjson(msg)
+            data =self.load_json(msg)
             if data["sender"] == self.sensor and data["command"] == "movement" :
                 self.stm_driver.send("movement_detected", "Controller")  
         elif msg.topic == 'ttm4115/team_1/project/connectionController':
-            data =self.loadjson(msg)
+            data =self.load_json(msg)
             #se på svaret på hvem du er koblet til 
             if data["command"] == "who am I connected to?":
                 if data["sender"] == "connectionController" and data["reciver"] == self.officeName: 
@@ -266,12 +266,12 @@ class ControllerComponent:
                 if data["sender"] == "connectionController" and data["reciver"] == self.officeName: 
                     self.stm_driver.send("partner_left_connection", "Controller")
         elif msg.topic == "ttm4115/team_1/project/QR":
-            data =self.loadjson(msg)
+            data =self.load_json(msg)
             if data["command"] == "QRscansuccess" and data["sender"] =="QRCodeController" and data["reciver"] == self.officeName:
                 self.connection = data["answer"]
                 self.stm_driver.send("connection_successful", "Controller")
         elif msg.topic == "ttm4115/team_1/project/controller":
-            data =self.loadjson(msg)
+            data =self.load_json(msg)
             if data["command"] == "partner active" and data["sender"] ==self.connection and data["reciver"] == self.officeName and data["answer"]=="first":
                 self.send_msg("partner active",self.officeName,self.connection,"Not first",MQTT_TOPIC_CONTROLLER)
                 self.stm_driver.send("partner_joined", "Controller")
@@ -326,7 +326,7 @@ class ControllerComponent:
         print("send_change_connection")
         self.send_msg("change connetion",self.officeName,"connectionController",self.connection,MQTT_TOPIC_CONNECTION)
 
-    def checkConnection(self):
+    def check_connection(self):
         self.send_msg("who am I connected to?",self.officeName,"connectionController",None,MQTT_TOPIC_CONNECTION)
 
     def send_left_connection(self):

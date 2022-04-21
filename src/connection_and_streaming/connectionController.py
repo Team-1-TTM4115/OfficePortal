@@ -1,7 +1,3 @@
-#Denne skal ha en fil der den kan finne/skrive til hvilken kontor som er koblet til /eller en database.
-#den skal bruke MQTT til å mota og sende inforamsjon
-#den kan endre hvem som er koblet til hvem etter succeful QR-kode scan, 
-# og den kan svar hvis noen ønkser å vite hvem de er koblet til
 from mqtt_client import MqttClient
 import logging
 import json
@@ -16,11 +12,11 @@ class connectionControllerComponent:
     def on_connect(self, client, userdata, flags, rc):
         self._logger.debug("MQTT connected to {}".format(client))
 
-    def findConnetion(self,office):
+    def find_connetion(self,office):
         #finn hvilken kontor office har en conntetion med
         filereader = open("database.txt", "r")
         for connections in filereader:
-            connection1, connection2= self.splittConnections(connections)
+            connection1, connection2= self.splitt_connections(connections)
             if connection1.strip() == office.strip():
                 filereader.close
                 return connection2.strip()
@@ -30,14 +26,14 @@ class connectionControllerComponent:
         filereader.close
         return None
 
-    def splittConnections(self,str):
+    def splitt_connections(self,str):
         return str.split(";")[0],str.split(";")[1]
 
-    def makeConnection(self,office1,office2):
+    def make_connection(self,office1,office2):
         filereader = open("database.txt", "r")
         connectionsList=[]
         for connections in filereader:
-            connection1, connection2= self.splittConnections(connections)
+            connection1, connection2= self.splitt_connections(connections)
             if connection1 == office1 or connection2 == office1:
                 connectionsList.append(office1+";"+office2+"\n")
             else:
@@ -50,7 +46,7 @@ class connectionControllerComponent:
         filewriter.write(str)
         filewriter.close()
 
-    def makenewConnection(self,office1,office2):
+    def make_new_Connection(self,office1,office2):
         filereader = open("database.txt", "r")
         connectionsList=[]
         for connections in filereader:
@@ -64,7 +60,7 @@ class connectionControllerComponent:
         filewriter.write(str)
         filewriter.close()
 
-    def loadjson(self, msg):
+    def load_json(self, msg):
         try:
             data = json.loads(msg.payload.decode("utf-8"))
         except Exception as err:
@@ -74,24 +70,22 @@ class connectionControllerComponent:
 
     def on_message(self, client, userdata, msg):
         if msg.topic == "ttm4115/team_1/project/connectionController":
-            data =self.loadjson(msg)
+            data =self.load_json(msg)
             if data["command"] == "who am I connected to?":
                 if data["reciver"]=="connectionController":
-                    officeConntedTo = self.findConnetion(data["sender"])
-                    self.sendAnswer("who am I connected to?",data["sender"],officeConntedTo)
+                    officeConntedTo = self.find_connetion(data["sender"])
+                    self.send_answer("who am I connected to?",data["sender"],officeConntedTo)
             elif data["command"] == "change connetion":
                 if data["reciver"]=="connectionController":
-                    oldOffice = self.findConnetion(data["sender"])
+                    oldOffice = self.find_connetion(data["sender"])
                     if oldOffice != None:
-                        self.makeConnection(data["sender"],data["answer"])
-                        self.sendAnswer("left connection",oldOffice,data["sender"])
+                        self.make_connection(data["sender"],data["answer"])
+                        self.send_answer("left connection",oldOffice,data["sender"])
                     else:
-                        self.makenewConnection(data["sender"],data["answer"])
-                #lag den nye connection hvis det er mulig send feilmeldig hvis feil.
-                #husk å send melding til den som den var koblet med fra før(hvis den var det)
+                        self.make_new_Connection(data["sender"],data["answer"])
             elif data["command"] == "left connection":
                 if data["reciver"]=="connectionController":
-                    self.sendAnswer("left connection",data["answer"],data["sender"])
+                    self.send_answer("left connection",data["answer"],data["sender"])
 
 
 
@@ -106,16 +100,11 @@ class connectionControllerComponent:
 
         # create a new MQTT client
         self._logger.debug("Connecting to MQTT broker {} at port {}".format(MQTT_BROKER, MQTT_PORT))
-        
         self.mqtt_client = MqttClient(self.name)
-        # callback methods
         self.mqtt_client.on_connect = self.on_connect
         self.mqtt_client.on_message = self.on_message
-        # Connect to the broker
         self.mqtt_client.connect(MQTT_BROKER, MQTT_PORT)
         self.mqtt_client.subscribe(MQTT_TOPIC_CONNECTION)
-        # start the internal loop to process MQTT messages
-        #self.mqtt_client.loop_start()
         self.mqtt_client.loop_start()
         while True:
             try:
@@ -125,7 +114,7 @@ class connectionControllerComponent:
                 pass
         
 
-    def sendAnswer(self,msg, reciver,answer):
+    def send_answer(self,msg, reciver,answer):
         self.send_msg(msg,self.name,reciver,answer) 
 
     def send_msg(self,msg,sender,reciver,answer):

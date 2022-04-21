@@ -35,8 +35,8 @@ class StreamAudioReciver():
                     break
         return (data, pyaudio.paContinue)
 
-    def playaudio(self):
-        p = pyaudio.PyAudio()
+    def play_audio(self):
+        p = pyaudio.PyAudio() 
         self.stream = p.open(format=FORMAT,
                              channels=CHANNELS,
                              rate=RATE,
@@ -48,7 +48,7 @@ class StreamAudioReciver():
         self.stream.close()
         p.terminate()
 
-    def loadjson(self, msg):
+    def load_json(self, msg):
         try:
             data = json.loads(msg.payload.decode("utf-8"))
         except Exception as err:
@@ -58,15 +58,15 @@ class StreamAudioReciver():
 
     def on_message(self, client, userdata, msg):
         if msg.topic == 'ttm4115/team_1/project/reciver':
-            data = self.loadjson(msg)
-            if data["command"] == "streamstart" and data["reciver"] == self.name:
-                self.recivefrom = data["answer"]
-                self.mqtt_client.subscribe("ttm4115/team_1/project/audio" + self.recivefrom[-1])
-                self.active = True
-            elif data["command"] == "streamstop" and data["reciver"] == self.name:
-                self.active = False
-                self.mqtt_client.unsubscribe("ttm4115/team_1/project/audio" + self.recivefrom[-1])
-                self.recivefrom = None
+            data =self.load_json(msg)
+            if data["command"] == "streamstart" and data["reciver"]== self.name:
+                self.recivefrom =data["answer"]
+                self.mqtt_client.subscribe("ttm4115/team_1/project/audio"+self.recivefrom[-1])
+                self.active =True
+            elif data["command"] == "streamstop" and data["reciver"]== self.name:
+                self.active =False  
+                self.mqtt_client.unsubscribe("ttm4115/team_1/project/audio"+self.recivefrom[-1])
+                self.recivefrom =None
                 self.stream.stop_stream()
                 self.framesaudio = []
                 self.firstframeaudio = 0
@@ -74,11 +74,11 @@ class StreamAudioReciver():
         if self.recivefrom != None:
             if msg.topic == "ttm4115/team_1/project/audio" + self.recivefrom[-1]:
 
-                data = self.loadjson(msg)
-                if data["command"] == "streamaudio" and data["reciver"] == self.name and self.active == True:
+                data =self.load_json(msg)
+                if data["command"] == "streamaudio" and data["reciver"]== self.name and self.active ==True:
                     if self.firstframeaudio == 0:
                         self.firstframeaudio = int(data["time"])
-                        y = Thread(target=self.playaudio)  #
+                        y=Thread(target=self.play_audio)#
                         y.start()
                     else:
                         self.framesaudio.append(data["answer"].encode("ISO-8859-1"))
