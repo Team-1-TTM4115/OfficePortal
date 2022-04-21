@@ -3,7 +3,7 @@ import stmpy
 import logging
 import json
 import time
-import keyboard
+# import keyboard
 
 MQTT_BROKER = "mqtt.item.ntnu.no"
 MQTT_PORT = 1883
@@ -222,6 +222,7 @@ class ControllerLogic:
 
 
 class ControllerComponent:
+
     def on_connect(self, client, userdata, flags, rc):
         self._logger.debug('MQTT connected to {}'.format(client))
 
@@ -249,6 +250,7 @@ class ControllerComponent:
                     self.stm_driver.send("partner_left_connection", "Controller")
         elif msg.topic == "ttm4115/team_1/project/QR":
             data =self.load_json(msg)
+
             if data["command"] == "QRscansuccess" and data["reciver"] == self.officeName:
                 self.connection = data["sender"] 
                 self.stm_driver.send("connection_successful", "Controller")
@@ -260,11 +262,11 @@ class ControllerComponent:
             elif data["command"] == "I am idle" and data["sender"] ==self.connection and data["reciver"] == self.officeName:
                 self.stm_driver.send("partner_idle", "Controller")
 
-    def __init__(self):
+    def initialize_stm(self):
 
         #Here is the office name
-        self.officeName="office1"
-        self.connection =None
+        self.officeName = "office1"
+        self.connection = None
 
         #Here you the define which sensors
         self.sensor=self.officeName+"sensor"
@@ -358,20 +360,15 @@ class ControllerComponent:
     def turn_microphone_off(self):
         self.send_msg("streamstop","Controller",self.officeName+"audio",self.connection+"reciver","ttm4115/team_1/project/audio"+self.officeName[-1])
         print("turn_reciver_off")
-
+        
     def enter_gallery_mode(self):
-        pass
+        self.stm_driver.send("enter_gallery_mode", "gui_stm")
     def enter_waiting_mode(self):
-        pass
+        self.stm_driver.send("enter_waiting_mode", "gui_stm")
     def enter_qr_scanner(self):
-        pass
+        self.stm_driver.send("enter_qr_scanner", "gui_stm")
     def enter_video_call(self):
-        pass
-
-    def send_start_qr(self):
-        print("jipp")
-        pass
-
+        self.stm_driver.send("enter_video_call", "gui_stm")
     def start_listening(self):
         self.stm_driver.send("start_listening", "voice_stm")
     def stopp_listening(self):
@@ -379,9 +376,9 @@ class ControllerComponent:
 
     def trigger_change(self,command):
         if command == "open menu":
-            pass
+            self.stm_driver.send("open menu", "gui_stm")
         elif command == "close menu":
-            pass
+            self.stm_driver.send("close menu", "gui_stm")
 
     def apply_filter(self,command):
         if command[1] ==1:
@@ -403,7 +400,7 @@ class ControllerComponent:
         elif command[0]=="remove background filter":
             self.send_msg("backgorund_off","Controller",self.officeName+"camera",None,"ttm4115/team_1/project/camera" +self.officeName[-1])
 
-
+"""
 debug_level = logging.DEBUG
 logger = logging.getLogger(__name__)
 logger.setLevel(debug_level)
@@ -415,3 +412,4 @@ logger.addHandler(ch)
 
 t = ControllerComponent()
 t.stm_driver
+"""
