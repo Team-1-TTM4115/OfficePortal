@@ -130,3 +130,4 @@ if __name__ == "__main__":
     ch.setFormatter(formatter)
     logger.addHandler(ch)
     t = StreamVideoReciver()
+

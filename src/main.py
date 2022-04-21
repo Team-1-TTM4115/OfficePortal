@@ -7,6 +7,9 @@ from voice_command.voice_cmd_stm import VoiceCommandComponent
 from connection_and_streaming.controller import ControllerComponent
 from gui.gui_controller import GuiController
 
+
+
+
 if __name__ == "__main__":
     #gui = GuiController()
     #gui.start()
@@ -31,5 +34,7 @@ if __name__ == "__main__":
     gui_controller.stm_driver = driver
 
     driver.start()
+    gui_controller.start()
+
 
 

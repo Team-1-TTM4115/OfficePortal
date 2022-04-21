@@ -5,8 +5,8 @@ from tkinter import *
 from connection_and_streaming.streamReciver import StreamVideoReciver
 from gui.waiting_page import WaitingPage
 from qr.qr_scanner import QrReader
-from src.gui.clock import Clock
-from src.gui.news import News
+from gui.clock import Clock
+from gui.news import News
 
 
 class Screen:
@@ -32,7 +32,9 @@ class Screen:
         # tk.NoDefaultRoot()  # may be redundant or may help clean up memory.
         startup_screen = tk.Tk()
         startup_screen.overrideredirect(True)
-        startup_screen.wm_attributes("-transparent", True)
+
+        #startup_screen.wm_attributes("-transparent", True) #dette krasjer for windows
+
         startup_screen.title('Office Portal')
         startup_screen.configure(background='black')
         # startup_screen.overrideredirect(True)
@@ -177,7 +179,8 @@ class Screen:
             qr_frame = tk.Frame(self.frame_container, bg='black')
             self.frames['qr_frame'] = qr_frame
             qr_frame.grid(row=0, column=0, sticky="nsew")
-            self.qr_reader = QrReader(qr_frame, self.width, self.height)
+            self.qr_reader = QrReader(qr_frame, self.width, self.height, "office1")
+
             self.qr_reader.capture_video()
         else:
             Exception("Frame container is not defined")

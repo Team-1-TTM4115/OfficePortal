@@ -41,7 +41,7 @@ class ControllerLogic:
             "trigger": "connection_successful",
             "source": "not_connected",
             "target": "waiting_for_partner",
-            "effect": "enter_waiting_mode; turn_QR_off; sensor_on; send_change_connection; send_partner_active; log_in_connected; start_timer('idle_timeout', 60000); start_timer('resend_timer', 20000)",
+            "effect": "enter_waiting_mode; sensor_on; send_change_connection; send_partner_active; log_in_connected; start_timer('idle_timeout', 60000); start_timer('resend_timer', 20000)",
         }
         t3 = { 
             "trigger": "partner_left_connection",
@@ -106,8 +106,8 @@ class ControllerLogic:
         'entry':'send_partner_active; turn_on_reciver; turn_on_camera; turn_on_microphone',
         'exit':'turn_reciver_off; turn_camera_off; turn_microphone_off',
         'movement_detected': 'start_timer("idle_timeout", 60000)',
-        'change_connection': 'turn_on_qr; enter_qr_scanner',
-        'qr_fail': 'turn_off_qr; enter_video_call',
+        'change_connection': 'enter_qr_scanner',
+        'qr_fail': ' enter_video_call',
         'change_session_view': 'trigger_change(*)',
         'choose_filter' : 'apply_filter(*)',}
 
@@ -119,12 +119,12 @@ class ControllerLogic:
         'new_connection': 'send_left_connection',
         'resend_timer': 'send_partner_active;start_timer("resend_timer", 20000)',
         'movement_detected':'start_timer("idle_timeout", 60000)',
-        'change_connection': 'turn_on_qr; enter_qr_scanner',
-        'qr_fail': 'turn_off_qr; enter_waiting_mode',}
+        'change_connection': 'enter_qr_scanner',
+        'qr_fail': 'enter_waiting_mode',}
         
         not_connected = {'name': 'not_connected',
-        'change_connection': 'turn_on_qr; enter_qr_scanner',
-        'qr_fail': 'turn_off_qr; enter_gallery_mode',}
+        'change_connection': 'enter_qr_scanner',
+        'qr_fail': 'enter_gallery_mode',}
 
         self.stm = stmpy.Machine(name=name, 
         transitions=[t0, t1,t2,t3,t4,t5,t6,t7,t8,t9,t10,t11],
@@ -178,12 +178,6 @@ class ControllerLogic:
         self.component.turn_on_reciver()
     def turn_reciver_off(self):
         self.component.turn_reciver_off()
-
-    def turn_on_qr(self):
-        print("turn_on_QR")
-
-    def turn_qr_off(self):
-        print("turn_QR_off")
 
     def sensor_on(self):
         self.component.sensor_on()
@@ -372,7 +366,7 @@ class ControllerComponent:
     def start_listening(self):
         self.stm_driver.send("start_listening", "voice_stm")
     def stopp_listening(self):
-        self.stm_driver.send("stopp_listening", "voice_stm")
+        self.stm_driver.send("stop_listening", "voice_stm")
 
     def trigger_change(self,command):
         if command == "open menu":

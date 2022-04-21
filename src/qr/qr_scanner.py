@@ -7,8 +7,9 @@ from PIL import Image, ImageTk
 from pyzbar import pyzbar
 from pyzbar.pyzbar import decode
 
-from src.gui.camera import Camera
-from src.mqtt_client import MqttClient
+from gui.camera import Camera
+from mqtt_client import MqttClient
+
 
 TOPIC_CONNECT = 'ttm4115/team_1/project/connect'
 
