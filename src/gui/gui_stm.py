@@ -1,5 +1,7 @@
 import stmpy
 
+from gui.gui_controller import GuiController
+
 
 class GuiSTM:
     """
@@ -9,6 +11,7 @@ class GuiSTM:
     """
 
     def __init__(self):
+        self.controller = GuiController()
         pass
 
     def send_err_msg(self, e_msg):

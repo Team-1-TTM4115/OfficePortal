@@ -3,6 +3,7 @@ import tkinter as tk
 from tkinter import *
 
 from connection_and_streaming.streamReciver import StreamVideoReciver
+from gui.waiting_page import WaitingPage
 from qr.qr_scanner import QrReader
 from src.gui.clock import Clock
 from src.gui.news import News
@@ -19,6 +20,7 @@ class Screen:
         self.height = None
         self.width = None
         self.qr_reader = None
+        self.waiting_nr = 1
 
     def configure_startup_screen(self) -> None:
         """
@@ -74,9 +76,8 @@ class Screen:
         self.create_start_page(frame_container)
         self.create_video_page()
         # self.create_qr_page()
-        self.create_filter_page()
         self.create_waiting_page()
-        self.show_frame("start_frame")
+        self.show_frame("video_frame")
         return root
 
     def create_start_page(self, parent_frame: tk.Frame) -> None:
@@ -124,6 +125,7 @@ class Screen:
         Temp video frame.
         :return:
         """
+        show_filter = True
         video_frame = tk.Frame(self.frame_container, bg='black')
         self.frames['video_frame'] = video_frame
         video_frame.grid(row=0, column=0, sticky="nsew", )
@@ -131,22 +133,12 @@ class Screen:
         canvas = Canvas(video_frame, bg='black', borderwidth=0)
         canvas.pack(fill=BOTH, expand=YES)
         StreamVideoReciver(canvas, self.width, self.height)
+        if show_filter:
+            self.create_filter_page(video_frame)
 
     def create_waiting_page(self):
-        """
-        Creates the waiting page.
-        :return: None
-        """
-        waiting_frame = tk.Frame(self.frame_container, bg='black')
-        waiting_frame.grid(row=0, column=0, sticky="nsew", )
-
-        waiting_label = tk.Label(waiting_frame, text="Waiting to connect", bg='black', fg='white',
-                                 font=("Helvetica", 40))
-        waiting_label.place(x=self.width / 2, y=self.height / 2, anchor=CENTER)
-        button1 = tk.Button(waiting_frame, text="Go to start frame",
-                            command=lambda: self.show_frame("start_frame"))
-        button1.pack(anchor=CENTER)
-
+        waiting = WaitingPage(self.frame_container, height=self.height, width=self.width)
+        waiting_frame = waiting.create_waiting_page()
         self.frames['waiting_frame'] = waiting_frame
 
     def destroy_waiting_page(self):
@@ -156,28 +148,25 @@ class Screen:
         """
         self.frames['waiting_frame'].destroy()
 
-    def create_filter_page(self):
+    def create_filter_page(self, parent_frame: tk.Frame):
         """
         Temp filter frame.
         :param root:
         :return:
         """
-        filters = ['dog', 'easter', 'misc', 'mountain']
-        filter_frame = tk.Frame(self.frame_container, bg='black')
-        filter_container = tk.Frame(filter_frame, bg='black')
-        filter_container.place(x=self.width / 2, y=self.height / 6, anchor=CENTER)
+        filters = ['dog', 'glasses', 'easter', 'lofoten', 'vacation', ]
+        filter_container = tk.Frame(parent_frame, bg='black')
+        filter_container.place(x=self.width / 2, y=self.height / 8, anchor=CENTER)
         current = 'misc'
 
         for index in range(len(filters)):
             if current == filters[index]:
                 button1 = tk.Label(filter_container, text=filters[index], bg='grey', fg='white', font=("Helvetica", 40),
-                                   borderwidth=10, relief=GROOVE,)
+                                   borderwidth=10, relief=GROOVE, )
                 button1.grid(row=0, column=index, padx=10, pady=10)
             else:
                 button1 = tk.Label(filter_container, text=filters[index], bg='grey', fg='white', font=("Helvetica", 40))
                 button1.grid(row=0, column=index, padx=10, pady=10)
-        self.frames['filter_frame'] = filter_frame
-        filter_frame.grid(row=0, column=0, sticky="nsew", )
 
     def create_qr_page(self):
         """
