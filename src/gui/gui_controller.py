@@ -67,6 +67,7 @@ class GuiController:
         t13 = {"trigger": "enter_waiting_mode", "source": "video_call", "target": "waiting_mode", "effect": "enter_waiting_mode()"}
         t14 = {"trigger": "enter_qr_scanner", "source": "waiting_mode", "target": "qr_scanner", "effect": "enter_qr_scanner()"}
 
+
         # States
         s0 = {"name": "initial"}
         s1 = {"name": "gallery_mode"}
@@ -75,7 +76,9 @@ class GuiController:
         s4 = {"name": "video_call", "entry": "new_frame(*)"}
         s5 = {"name": "menu_open"}
 
+
         machine = stmpy.Machine(name="gui_stm", transitions=[t0, t1, t2, t3, t4, t5, t6, t7, t8, t9, t10, t11, t12, t13, t14], states=[s0, s1, s2, s3, s4, s5], obj=gui_stm)
+
         gui_stm.stm = machine
 
         self.stm = machine

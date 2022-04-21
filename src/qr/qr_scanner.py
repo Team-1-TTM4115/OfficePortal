@@ -10,6 +10,7 @@ from pyzbar.pyzbar import decode
 from gui.camera import Camera
 from mqtt_client import MqttClient
 
+
 TOPIC_CONNECT = 'ttm4115/team_1/project/connect'
 
 

@@ -32,7 +32,9 @@ class Screen:
         # tk.NoDefaultRoot()  # may be redundant or may help clean up memory.
         startup_screen = tk.Tk()
         startup_screen.overrideredirect(True)
+
         #startup_screen.wm_attributes("-transparent", True) #dette krasjer for windows
+
         startup_screen.title('Office Portal')
         startup_screen.configure(background='black')
         # startup_screen.overrideredirect(True)
@@ -178,6 +180,7 @@ class Screen:
             self.frames['qr_frame'] = qr_frame
             qr_frame.grid(row=0, column=0, sticky="nsew")
             self.qr_reader = QrReader(qr_frame, self.width, self.height, "office1")
+
             self.qr_reader.capture_video()
         else:
             Exception("Frame container is not defined")
