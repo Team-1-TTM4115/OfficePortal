@@ -250,6 +250,7 @@ class ControllerComponent:
                     self.stm_driver.send("partner_left_connection", "Controller")
         elif msg.topic == "ttm4115/team_1/project/QR":
             data =self.load_json(msg)
+
             if data["command"] == "QRscansuccess" and data["reciver"] == self.officeName:
                 self.connection = data["sender"] 
                 self.stm_driver.send("connection_successful", "Controller")
