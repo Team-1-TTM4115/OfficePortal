@@ -369,20 +369,19 @@ class ControllerComponent:
         pass
 
     def send_start_qr(self):
+        print("jipp")
         pass
 
     def start_listening(self):
-        pass
+        self.stm_driver.send("start_listening", "voice_stm")
     def stopp_listening(self):
-        pass
+        self.stm_driver.send("stopp_listening", "voice_stm")
 
     def trigger_change(self,command):
         if command == "open menu":
             pass
-            #send open_menu qui
         elif command == "close menu":
             pass
-            #send close_menu qui
 
     def apply_filter(self,command):
         if command[1] ==1:
