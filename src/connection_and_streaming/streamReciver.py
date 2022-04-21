@@ -51,6 +51,7 @@ class StreamVideoReciver():
                 data =self.load_json(msg)
                 if data["command"] == "streamvideo" and data["reciver"]== self.name and self.active ==True:
                     framevideo=self.bts_to_frame(data["answer"])
+
                     self.frame = frame_video
                     self.start_stream()
                     # cv2.imshow("webcam", framevideo)

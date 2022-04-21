@@ -10,6 +10,7 @@ import time
 import os
 import cvzone
 from cvzone.SelfiSegmentationModule import SelfiSegmentation
+import stmpy
 
 from src.gui.camera import Camera
 
@@ -72,7 +73,6 @@ class StreamVideo:
                 self.QR_on=True
             elif data["command"] == "stop":
                 self.QR_on=False
-
 
     def bts_to_frame(self,b64_string):
         base64_bytes=b64_string.encode("utf-8")
@@ -160,7 +160,7 @@ class StreamVideo:
         self.mqtt_client.subscribe(MQTT_TOPIC_SENSOR)
         thread = Thread(target=self.mqtt_client.loop_start())
         thread.start()
-
+        
         cap = Camera(0)
         self.segmentor = SelfiSegmentation()
         self.listImg = os.listdir(r"C:\Users\ingeb\Documents\universtiet\NTNU\tredje\var\Desgin\project_design\OfficePortal\src\I+E\BackgroundFilters")
