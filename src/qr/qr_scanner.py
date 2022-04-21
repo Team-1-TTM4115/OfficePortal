@@ -1,3 +1,4 @@
+import json
 import tkinter
 from tkinter import NW
 
@@ -11,7 +12,7 @@ TOPIC_CONNECT = 'ttm4115/team_1/project/connect'
 
 
 class QrReader:
-    def __init__(self, frame, heigth, width):
+    def __init__(self, frame, heigth, width, office_name):
         self.__mqtt_client = MqttClient("QrReader")
         self.cap = None
         self.gui_window = frame
@@ -19,6 +20,7 @@ class QrReader:
         self.canvas = None
         self.height = heigth
         self.width = width
+        self.office_name = office_name
 
     def __read_barcodes(self, frame):
         barcodes = pyzbar.decode(frame)
@@ -28,7 +30,7 @@ class QrReader:
             barcode_info = barcode.data.decode('utf-8')
             cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
 
-            self.__mqtt_client.publish(TOPIC_CONNECT, barcode_info)
+            self.send_msg(barcode_info, self.office_name, TOPIC_CONNECT)
             # TODO: Do something after scanning a code. Like trying to connect?
         return frame
 
@@ -57,3 +59,8 @@ class QrReader:
     def stop_capture(self):
         self.cap.release()
         cv2.destroyAllWindows()
+
+    def send_msg(self, qr, sender, where):
+        command = {"qr": qr, "sender": sender}
+        payload = json.dumps(command)
+        self.__mqtt_client.publish(where, payload)
