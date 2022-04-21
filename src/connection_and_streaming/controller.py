@@ -3,7 +3,7 @@ import stmpy
 import logging
 import json
 import time
-import keyboard
+# import keyboard
 
 MQTT_BROKER = "mqtt.item.ntnu.no"
 MQTT_PORT = 1883
@@ -222,6 +222,7 @@ class ControllerLogic:
 
 
 class ControllerComponent:
+
     def on_connect(self, client, userdata, flags, rc):
         self._logger.debug('MQTT connected to {}'.format(client))
 
@@ -260,11 +261,11 @@ class ControllerComponent:
             elif data["command"] == "I am idle" and data["sender"] ==self.connection and data["reciver"] == self.officeName:
                 self.stm_driver.send("partner_idle", "Controller")
 
-    def __init__(self):
+    def initialize_stm(self):
 
         #Here is the office name
-        self.officeName="office1"
-        self.connection =None
+        self.officeName = "office1"
+        self.connection = None
 
         #Here you the define which sensors
         self.sensor=self.officeName+"sensor"
@@ -403,7 +404,7 @@ class ControllerComponent:
         elif command[0]=="remove background filter":
             self.send_msg("backgorund_off","Controller",self.officeName+"camera",None,"ttm4115/team_1/project/camera" +self.officeName[-1])
 
-
+"""
 debug_level = logging.DEBUG
 logger = logging.getLogger(__name__)
 logger.setLevel(debug_level)
@@ -415,3 +416,4 @@ logger.addHandler(ch)
 
 t = ControllerComponent()
 t.stm_driver
+"""

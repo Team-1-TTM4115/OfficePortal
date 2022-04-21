@@ -1,7 +1,7 @@
 from mqtt_client import MqttClient
 import logging
 import json
-import keyboard
+# import keyboard
 
 MQTT_BROKER = "mqtt.item.ntnu.no"
 MQTT_PORT = 1883
