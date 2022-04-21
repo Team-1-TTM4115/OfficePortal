@@ -12,8 +12,9 @@ def on_found(found_qr):
     print("This link was found and valid: " + found_qr.get_link_id())
 
 
-generator = QrGenerator(on_expired, on_found)
+generator = QrGenerator(on_expired, on_found, "office2")
 generator.generate_invite_link(datetime(2022, 4, 26))
+
 
 while True:
     generator.loop()

@@ -9,8 +9,8 @@ import base64
 import numpy as np
 import cv2
 from PIL import Image, ImageTk
-
 from mqtt_client import MqttClient
+
 
 FPS = 30
 CHANNELS = 1
@@ -51,11 +51,14 @@ class StreamVideoReciver():
                 data =self.load_json(msg)
                 if data["command"] == "streamvideo" and data["reciver"]== self.name and self.active ==True:
                     framevideo=self.bts_to_frame(data["answer"])
-                    cv2.imshow("webcam",framevideo)
-                    cv2.waitKey(20)
-                
-    def bts_to_frame(self,b64_string):
-        base64_bytes=b64_string.encode("utf-8")
+
+                    self.frame = frame_video
+                    self.start_stream()
+                    # cv2.imshow("webcam", framevideo)
+                    # cv2.waitKey(20)
+
+    def bts_to_frame(self, b64_string):
+        base64_bytes = b64_string.encode("utf-8")
         buff = np.frombuffer(base64.b64decode(base64_bytes), np.uint8)
         img = cv2.imdecode(buff, cv2.IMREAD_COLOR)
         return img

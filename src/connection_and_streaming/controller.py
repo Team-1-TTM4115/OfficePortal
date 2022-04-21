@@ -23,156 +23,125 @@ class ControllerLogic:
         self.id = name
         self.component = component
 
-        t0 = {
+        t0 = { 
             "source": "initial",
             "target": "not_connected",
-            "effect": "sensor_on; turn_display_on",
+            "effect": "enter_gallery_mode",
             "function": self.check_connection
         }
+
         t1 = {
-            "trigger": "movement_detected",
-            "source": "not_connected",
-            "target": "ready_for_qr_code",
-            "effect": "start_timer('t', 60000); turn_on_QR; sensor_off; log_in_ready_for_qr_code",
-        }
-        t2 = {
-            "trigger": "t",
-            "source": "ready_for_qr_code",
-            "target": "not_connected",
-            "effect": "show_static_picture; turn_QR_off; sensor_on; log_in_not_connected",
-        }
-
-        t3 = {
             "trigger": "new_connection",
             "source": "not_connected",
             "target": "connected",
-            "effect": "log_in_connected",
+            "effect": "sensor_on; log_in_connected",
         }
 
-        t4 = {
-            "trigger": "new_connection",
-            "source": "ready_for_qr_code",
-            "target": "connected",
-            "effect": "show_static_picture; turn_QR_off; sensor_on; log_in_connected",
-        }
-
-        t5 = {
+        t2 = { 
             "trigger": "connection_successful",
-            "source": "ready_for_qr_code",
-            "target": "connected",
-            "effect": "show_static_picture; turn_QR_off; sensor_on; send_change_connection; log_in_connected; ",
+            "source": "not_connected",
+            "target": "waiting_for_partner",
+            "effect": "enter_waiting_mode; turn_QR_off; sensor_on; send_change_connection; send_partner_active; log_in_connected; start_timer('idle_timeout', 60000); start_timer('resend_timer', 20000)",
         }
-        t6 = {
+        t3 = { 
             "trigger": "partner_left_connection",
             "source": "connected",
             "target": "not_connected",
-            "effect": "log_in_not_connected",
+            "effect": "sensor_off; start_listening; log_in_not_connected",
         }
-        t7 = {
-            "trigger": "new_connection",
-            "source": "connected",
-            "target": "connected",
-            "effect": "send_left_connection; log_in_connected",
-        }
-        t8 = {
+        t4 = { 
             "trigger": "movement_detected",
             "source": "connected",
             "target": "waiting_for_partner",
-            "effect": "start_timer('idle_timeout', 60000); send_partner_avtive; start_timer('resend_timer', 20000); log_in_waiting_for_partner",
+            "effect": "start_timer('idle_timeout', 60000); start_listening; enter_waiting_mode; send_partner_active; start_timer('resend_timer', 20000); log_in_waiting_for_partner",
         }
 
-        t9 = {
+        t5 = { 
             "trigger": "idle_timeout",
             "source": "waiting_for_partner",
             "target": "connected",
-            "effect": "log_in_connected; log_in_connected",
+            "effect": "enter_gallery_mode; log_in_connected",
         }
 
-        t10 = {
-            "trigger": "new_connection",
-            "source": "waiting_for_partner",
-            "target": "connected",
-            "effect": "send_left_connection; log_in_connected",
-        }
-
-        t11 = {
+        t6 = { 
             "trigger": "partner_left_connection",
             "source": "waiting_for_partner",
             "target": "not_connected",
-            "effect": "log_in_not_connected",
+            "effect": "log_in_not_connected; enter_gallery_mode",
         }
 
-        t12 = {
-            "trigger": "resend_timer",
-            "source": "waiting_for_partner",
-            "target": "waiting_for_partner",
-            "effect": "send_partner_avtive; start_timer('resend_timer', 20000); log_in_waiting_for_partner",
-        }
-
-        t13 = {
-            "trigger": "movement_detected",
-            "source": "waiting_for_partner",
-            "target": "waiting_for_partner",
-            "effect": "start_timer('idle_timeout', 60000); log_in_waiting_for_partner",
-        }
-
-        t14 = {
+        t7 = { 
             "trigger": "partner_joined",
             "source": "waiting_for_partner",
             "target": "active_session",
-            "effect": "send_partner_avtive; turn_on_reciver; turn_on_camera; turn_on_microphone; show_live_stream; log_in_active_session",
+            "effect": "log_in_active_session; enter_video_call",
         }
 
-        t15 = { 
-            "trigger": "movement_detected",
-            "source": "active_session",
-            "target": "active_session",
-            "effect": "start_timer('idle_timeout', 60000); log_in_active_session",
-        }
-
-        t16 = { 
+        t8 = { 
             "trigger": "idle_timeout",
             "source": "active_session",
             "target": "connected",
-            "effect": "send_I_am_idle; show_static_picture; turn_reciver_off; turn_camera_off; turn_microphone_off; log_in_connected",
+            "effect": "send_I_am_idle; enter_gallery_mode; stopp_listening; log_in_connected",
         }
-        t17 = { 
+        t9 = {
             "trigger": "partner_idle",
             "source": "active_session",
             "target": "waiting_for_partner",
-            "effect": "send_partner_avtive; show_static_picture; turn_reciver_off; turn_camera_off; turn_microphone_off; start_timer('resend_timer', 20000); log_in_waiting_for_partner",
+            "effect": "send_partner_active; enter_waiting_mode; start_timer('resend_timer', 20000); log_in_waiting_for_partner",
         }
-        t18 = { 
+        t10 = {
             "trigger": "new_connection",
             "source": "active_session",
-            "target": "connected",
-            "effect": "send_left_connection; show_static_picture; turn_reciver_off; turn_camera_off; turn_microphone_off; log_in_connected",
+            "target": "waiting_for_partner",
+            "effect": "send_left_connection; enter_waiting_mode; log_in_waiting_for_partner",
         }
-        t19 = {
+        t11 = { 
             "trigger": "partner_left_connection",
             "source": "active_session",
             "target": "not_connected",
-            "effect": "show_static_picture; turn_reciver_off; turn_camera_off; turn_microphone_off; log_in_not_connected",
-        }
-        t20 = {#qr_code_scanned er ikke lagt ennå, denne kan kansje være likt som i ready for qr code,
-            "trigger": "qr_code_scanned",
-            "source": "active_session",
-            "target": "connected",
-            "effect": "send_left_connection; show_static_picture; turn_reciver_off; turn_camera_off; turn_microphone_off; log_in_connected",
+            "effect": "enter_gallery_mode; log_in_not_connected",
         }
 
-        self.stm = stmpy.Machine(name=name, transitions=[t0, t1,t2,t3,t4,t5,t6,t7,t8,t9,t10,t11,t12,t13,t14,t15,t16,t17,t18,t19,t20], obj=self)
+        active_session = {'name': 'active_session',
+        'entry':'send_partner_active; turn_on_reciver; turn_on_camera; turn_on_microphone',
+        'exit':'turn_reciver_off; turn_camera_off; turn_microphone_off',
+        'movement_detected': 'start_timer("idle_timeout", 60000)',
+        'change_connection': 'turn_on_qr; enter_qr_scanner',
+        'qr_fail': 'turn_off_qr; enter_video_call',
+        'change_session_view': 'trigger_change(*)',
+        'choose_filter' : 'apply_filter(*)',}
+
+        connected = {'name': 'connected',
+        'new_connection': 'send_left_connection; send_to_qui_connected',}
+
+        waiting_for_partner = {'name': 'waiting_for_partner',
+        'qr_code_scanned': 'send_left_connection',
+        'new_connection': 'send_left_connection',
+        'resend_timer': 'send_partner_active;start_timer("resend_timer", 20000)',
+        'movement_detected':'start_timer("idle_timeout", 60000)',
+        'change_connection': 'turn_on_qr; enter_qr_scanner',
+        'qr_fail': 'turn_off_qr; enter_waiting_mode',}
+        
+        not_connected = {'name': 'not_connected',
+        'change_connection': 'turn_on_qr; enter_qr_scanner',
+        'qr_fail': 'turn_off_qr; enter_gallery_mode',}
+
+        self.stm = stmpy.Machine(name=name, 
+        transitions=[t0, t1,t2,t3,t4,t5,t6,t7,t8,t9,t10,t11],
+        obj=self, states=[active_session,connected,waiting_for_partner,not_connected])
 
     def check_connection(self):
-        self.component.checkConnection()
+        self.component.check_connection()
         time.sleep(0.5)
         #ke skjer hvis connectioncontroller går på etter dette og
         # den hadde en connection(dette skal ikke skje med korrect bruk)
         if self.component.connection==None:
             self._logger.info("state=not_connected")
+            self.start_listening()
             return"not_connected"
         else:
             self._logger.info("state=connected")
+            self.sensor_on()
             return "connected"
 
     def log_in_connected(self):
@@ -195,6 +164,11 @@ class ControllerLogic:
     def turn_microphone_off(self):
         self.component.turn_microphone_off()
 
+    def start_listening(self):
+        self.component.start_listening()
+    def stopp_listening(self):
+        self.component.stopp_listening()
+
     def turn_on_camera(self):
         self.component.turn_on_camera()
     def turn_camera_off(self):
@@ -205,10 +179,10 @@ class ControllerLogic:
     def turn_reciver_off(self):
         self.component.turn_reciver_off()
 
-    def turn_on_QR(self):
+    def turn_on_qr(self):
         print("turn_on_QR")
 
-    def turn_QR_off(self):
+    def turn_qr_off(self):
         print("turn_QR_off")
 
     def sensor_on(self):
@@ -217,27 +191,35 @@ class ControllerLogic:
     def sensor_off(self):
         self.component.sensor_off()
 
-    def turn_display_on(self):
-        #vis live, dette skal kanskje skje i QR/QIen.
-        print("turn_display_on")
-    def show_static_picture(self):
-        #vise static
-        print("show_static_picture")
+    def enter_gallery_mode(self):
+        self.component.enter_gallery_mode()
+    def enter_waiting_mode(self):
+        self.component.enter_waiting_mode()
+    def enter_qr_scanner(self):
+        self.component.enter_qr_scanner()
+    def enter_video_call(self):
+        self.component.enter_video_call()
 
-    def show_live_stream(self):
-        #vis live(hva du gjør), dette skal kanskje skje i QR/QI-en. revicer viser motparten
-        pass
-
+    def send_start_qr(self):
+        self.component.send_start_qr()
+        
     def send_left_connection(self):
         self.component.send_left_connection()
     def send_change_connection(self):
         self.component.send_change_connection()
 
-    def send_partner_avtive(self):
-        self.component.send_partner_avtive()
+    def send_partner_active(self):
+        self.component.send_partner_active()
 
     def send_I_am_idle(self):
         self.component.send_I_am_idle()
+
+    def trigger_change(self,command):
+        self.component.trigger_change(command)
+
+    def apply_filter(self,command):
+        self.component.apply_filter(command)
+
 
 class ControllerComponent:
     def on_connect(self, client, userdata, flags, rc):
@@ -267,8 +249,9 @@ class ControllerComponent:
                     self.stm_driver.send("partner_left_connection", "Controller")
         elif msg.topic == "ttm4115/team_1/project/QR":
             data =self.load_json(msg)
-            if data["command"] == "QRscansuccess" and data["sender"] =="QRCodeController" and data["reciver"] == self.officeName:
-                self.connection = data["answer"]
+
+            if data["command"] == "QRscansuccess" and data["reciver"] == self.officeName:
+                self.connection = data["sender"] 
                 self.stm_driver.send("connection_successful", "Controller")
         elif msg.topic == "ttm4115/team_1/project/controller":
             data =self.load_json(msg)
@@ -304,22 +287,25 @@ class ControllerComponent:
         self.mqtt_client.subscribe(MQTT_TOPIC_CONTROLLER)
         self.mqtt_client.loop_start()
 
+        self.stm_driver = None
         # we start the stmpy driver, without any state machines for now
-        self.stm_driver = stmpy.Driver()
-        self.stm_driver.start(keep_active=True)
+        #self.stm_driver = stmpy.Driver()
+        #self.stm_driver.start(keep_active=True)
         controller= ControllerLogic('Controller',self)
-        self.stm_driver.add_machine(controller.stm)
-        while True:
-            try:
-                if keyboard.is_pressed("Escape"):
-                    self.stop()
-                    break
-            except:
-                pass
+        #self.stm_driver.add_machine(controller.stm)
+        self.stm= controller.stm
+#        while True:
+#            try:
+#                if keyboard.is_pressed("Escape"):
+#                    self.stop()
+#                    break
+#            except:
+#                pass
+
 
     def stop(self):
         # stop the state machine Driver and MQTT
-        self.stm_driver.stop()
+        #self.stm_driver.stop()
         self.mqtt_client.loop_stop()
 
     def send_change_connection(self):
@@ -332,7 +318,7 @@ class ControllerComponent:
     def send_left_connection(self):
         self.send_msg("left connection",self.officeName,"connectionController",self.connection,MQTT_TOPIC_CONNECTION)
 
-    def send_partner_avtive(self):
+    def send_partner_active(self):
         self.send_msg("partner active",self.officeName,self.connection,"first",MQTT_TOPIC_CONTROLLER)
 
     def send_I_am_idle(self):
@@ -374,6 +360,51 @@ class ControllerComponent:
         self.send_msg("streamstop","Controller",self.officeName+"audio",self.connection+"reciver","ttm4115/team_1/project/audio"+self.officeName[-1])
         print("turn_reciver_off")
 
+    def enter_gallery_mode(self):
+        pass
+    def enter_waiting_mode(self):
+        pass
+    def enter_qr_scanner(self):
+        pass
+    def enter_video_call(self):
+        pass
+
+    def send_start_qr(self):
+        print("jipp")
+        pass
+
+    def start_listening(self):
+        self.stm_driver.send("start_listening", "voice_stm")
+    def stopp_listening(self):
+        self.stm_driver.send("stopp_listening", "voice_stm")
+
+    def trigger_change(self,command):
+        if command == "open menu":
+            pass
+        elif command == "close menu":
+            pass
+
+    def apply_filter(self,command):
+        if command[1] ==1:
+            effect = "dog"
+        elif command[1] ==2:
+            effect = "hat_glasses"
+        elif command[1] ==3:
+            effect = "easter"
+        elif command[1] ==4:
+            effect = "lofoten"
+        elif command[1] ==5:
+            effect = "vacay"
+        if command[0]=="apply background filter number":
+            self.send_msg("backgorund_on","Controller",self.officeName+"camera",effect,"ttm4115/team_1/project/camera" +self.officeName[-1])
+        elif command[0]=="apply face filter number":
+            self.send_msg("fliter_on","Controller",self.officeName+"camera",effect,"ttm4115/team_1/project/camera" +self.officeName[-1])
+        elif command[0]=="remove face filter":
+            self.send_msg("fliter_off","Controller",self.officeName+"camera",None,"ttm4115/team_1/project/camera" +self.officeName[-1])
+        elif command[0]=="remove background filter":
+            self.send_msg("backgorund_off","Controller",self.officeName+"camera",None,"ttm4115/team_1/project/camera" +self.officeName[-1])
+
+
 debug_level = logging.DEBUG
 logger = logging.getLogger(__name__)
 logger.setLevel(debug_level)
@@ -384,3 +415,4 @@ ch.setFormatter(formatter)
 logger.addHandler(ch)
 
 t = ControllerComponent()
+t.stm_driver
