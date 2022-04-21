@@ -286,22 +286,25 @@ class ControllerComponent:
         self.mqtt_client.subscribe(MQTT_TOPIC_CONTROLLER)
         self.mqtt_client.loop_start()
 
+        self.stm_driver = None
         # we start the stmpy driver, without any state machines for now
-        self.stm_driver = stmpy.Driver()
-        self.stm_driver.start(keep_active=True)
+        #self.stm_driver = stmpy.Driver()
+        #self.stm_driver.start(keep_active=True)
         controller= ControllerLogic('Controller',self)
-        self.stm_driver.add_machine(controller.stm)
-        while True:
-            try:
-                if keyboard.is_pressed("Escape"):
-                    self.stop()
-                    break
-            except:
-                pass
+        #self.stm_driver.add_machine(controller.stm)
+        self.stm= controller.stm
+#        while True:
+#            try:
+#                if keyboard.is_pressed("Escape"):
+#                    self.stop()
+#                    break
+#            except:
+#                pass
+
 
     def stop(self):
         # stop the state machine Driver and MQTT
-        self.stm_driver.stop()
+        #self.stm_driver.stop()
         self.mqtt_client.loop_stop()
 
     def send_change_connection(self):
@@ -412,3 +415,4 @@ ch.setFormatter(formatter)
 logger.addHandler(ch)
 
 t = ControllerComponent()
+t.stm_driver
