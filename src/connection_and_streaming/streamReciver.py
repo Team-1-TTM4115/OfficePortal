@@ -6,12 +6,10 @@ from threading import Thread
 import base64
 import numpy as np
 import cv2
-import pyaudio
 from mqtt_client import MqttClient
 
 
 FPS =30
-FORMAT = pyaudio.paInt16
 CHANNELS =1
 RATE = 44100
 

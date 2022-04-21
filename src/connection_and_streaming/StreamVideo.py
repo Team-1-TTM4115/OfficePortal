@@ -10,7 +10,6 @@ import time
 import os
 import cvzone
 from cvzone.SelfiSegmentationModule import SelfiSegmentation
-import stmpy
 
 MQTT_BROKER = "mqtt.item.ntnu.no"
 MQTT_PORT = 1883
@@ -261,18 +260,6 @@ class StreamVideo:
         command = {"command": msg, "sender": sender, "reciver": reciver,"time": timestamp,"answer": answer} 
         payload = json.dumps(command)
         self.mqtt_client.publish(where, payload)
-
-
-
-
-
-
-
-
-
-
-
-
 
 debug_level = logging.DEBUG
 logger = logging.getLogger(__name__)
