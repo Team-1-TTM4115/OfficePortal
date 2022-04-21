@@ -1,18 +1,15 @@
 import stmpy
 
-#from gui.gui_controller import GuiController
+# from gui.gui_controller import GuiController
 # from gui.main_screen import Screen
 
 from voice_command.voice_cmd_stm import VoiceCommandComponent
 from connection_and_streaming.controller import ControllerComponent
 from gui.gui_controller import GuiController
 
-
-
-
 if __name__ == "__main__":
-    #gui = GuiController()
-    #gui.start()
+    # gui = GuiController()
+    # gui.start()
 
     voice_cmd_component = VoiceCommandComponent()
     voice_cmd_component.initialize_stm()
@@ -35,6 +32,3 @@ if __name__ == "__main__":
 
     driver.start()
     gui_controller.start()
-
-
-

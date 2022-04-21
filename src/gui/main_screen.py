@@ -2,6 +2,8 @@ import time
 import tkinter as tk
 from tkinter import *
 
+from PIL import Image, ImageTk
+
 from connection_and_streaming.streamReciver import StreamVideoReciver
 from gui.waiting_page import WaitingPage
 from qr.qr_scanner import QrReader
@@ -21,6 +23,8 @@ class Screen:
         self.width = None
         self.qr_reader = None
         self.waiting_nr = 1
+        self.img_path = r"../img/gallery_img.jpg"
+        self.abs_path = r"/Users/rojahno/Datateknologi/DKS/OfficePortal/src/img/gallery_img.jpg"
 
     def configure_startup_screen(self) -> None:
         """
@@ -33,7 +37,7 @@ class Screen:
         startup_screen = tk.Tk()
         startup_screen.overrideredirect(True)
 
-        #startup_screen.wm_attributes("-transparent", True) #dette krasjer for windows
+        # startup_screen.wm_attributes("-transparent", True) #dette krasjer for windows
 
         startup_screen.title('Office Portal')
         startup_screen.configure(background='black')
@@ -75,11 +79,12 @@ class Screen:
         frame_container = self.create_grid_frame(root)
         self.frame_container = frame_container
         # TODO: Remove from here. GUI controller should be responsible for this.
-        self.create_start_page(frame_container)
-        self.create_video_page()
+        # self.create_start_page(frame_container)
+        self.create_gallery_page()
+        # self.create_video_page()
         # self.create_qr_page()
-        self.create_waiting_page()
-        self.show_frame("video_frame")
+        # self.create_waiting_page()
+        self.show_frame("gallery_frame")
         return root
 
     def create_start_page(self, parent_frame: tk.Frame) -> None:
@@ -137,6 +142,21 @@ class Screen:
         StreamVideoReciver(canvas, self.width, self.height)
         if show_filter:
             self.create_filter_page(video_frame)
+
+    def create_gallery_page(self):
+        gallery_frame = tk.Frame(self.frame_container, bg='black')
+        self.frames['gallery_frame'] = gallery_frame
+        gallery_frame.grid(row=0, column=0, sticky="nsew", )
+
+        canvas = Canvas(gallery_frame, width=self.width, height=self.height)
+        canvas.pack(fill=BOTH, expand=YES)
+        button = tk.Button(gallery_frame, text="Go to filter", )
+        button.pack(anchor=CENTER)
+        load = Image.open(self.img_path)
+        rezized = load.resize((self.width, self.height), Image.ANTIALIAS)
+        image = ImageTk.PhotoImage(rezized)
+        self.frame_container.image = image  # to prevent the image garbage collected.
+        canvas.create_image((0, 0), image=image, anchor=NW)
 
     def create_waiting_page(self):
         waiting = WaitingPage(self.frame_container, height=self.height, width=self.width)
@@ -218,3 +238,8 @@ class Screen:
         self.configure_startup_screen()
         root = self.create_main_screen()
         root.mainloop()
+
+
+if __name__ == '__main__':
+    app = Screen()
+    app.run()
