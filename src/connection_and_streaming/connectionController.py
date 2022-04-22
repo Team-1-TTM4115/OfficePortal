@@ -83,6 +83,7 @@ class connectionControllerComponent:
                         self.send_answer("left connection",oldOffice,data["sender"])
                     else:
                         self.make_new_Connection(data["sender"],data["answer"])
+                    self.send_answer("new connection",data["answer"],data["sender"])
             elif data["command"] == "left connection":
                 if data["reciver"]=="connectionController":
                     self.send_answer("left connection",data["answer"],data["sender"])

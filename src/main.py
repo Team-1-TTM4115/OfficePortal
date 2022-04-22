@@ -34,6 +34,7 @@ if __name__ == "__main__":
     gui_controller.stm_driver = driver
 
     driver.start()
+    driver.send("on", "Controller")
     gui_controller.start()
 
 
