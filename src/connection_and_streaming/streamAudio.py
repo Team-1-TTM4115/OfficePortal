@@ -38,7 +38,7 @@ class StreamAudio():
                 self.active =False
                    
     def __init__(self):
-        self.number =1
+        self.number =7
         self.name= "office"+str(self.number) #audio"
         self.sendTo =None
         self.active =False
@@ -80,7 +80,7 @@ class StreamAudio():
 
     def exit(self):
         try:
-            if keyboard.is_pressed("Escape"):
+            if False:#keyboard.is_pressed("Escape"):
                 return False
             else:
                 return True
