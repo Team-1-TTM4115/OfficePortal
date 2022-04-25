@@ -19,8 +19,9 @@ class GuiSTM:
     def send_err_msg(self, e_msg):
         self.gui_controller.send_err_msg(e_msg)
 
-    def new_frame(self, frame):
-        self.gui_controller.new_frame(frame)
+    def new_frame(self, frame=None):
+        pass
+        #self.gui_controller.new_frame(frame)
 
     def enter_qr_scanner(self):
         self.gui_controller.enter_qr_scanner()

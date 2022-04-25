@@ -3,6 +3,7 @@ import stmpy
 import logging
 import json
 import time
+from threading import Thread
 # 
 
 MQTT_BROKER = "mqtt.item.ntnu.no"
@@ -310,6 +311,7 @@ class ControllerComponent:
         self.mqtt_client.subscribe(MQTT_TOPIC_CONNECTION)
         self.mqtt_client.subscribe(MQTT_TOPIC_QR)
         self.mqtt_client.subscribe(MQTT_TOPIC_CONTROLLER)
+        t=Thread()
         self.mqtt_client.loop_start()
 
         self.stm_driver = None
@@ -371,6 +373,7 @@ class ControllerComponent:
         print("turn_on_camera")
     
     def turn_on_reciver(self):
+        time.sleep(1)
         self.send_msg("streamstart","Controller",self.officeName+"reciver",self.connection,MQTT_TOPIC_RECIVER)
         print("turn_on_reciver")
     def turn_reciver_off(self):
@@ -399,28 +402,28 @@ class ControllerComponent:
 
     def trigger_change(self,command):
         if command == "open menu":
-            self.stm_driver.send("open menu", "gui_stm")
+            self.stm_driver.send("open_menu", "gui_stm")
         elif command == "close menu":
-            self.stm_driver.send("close menu", "gui_stm")
+            self.stm_driver.send("close_menu", "gui_stm")
 
     def apply_filter(self,command):
-        if command[1] ==1:
-            effect = "dog"
-        elif command[1] ==2:
-            effect = "hat_glasses"
-        elif command[1] ==3:
-            effect = "easter"
-        elif command[1] ==4:
-            effect = "lofoten"
-        elif command[1] ==5:
-            effect = "vacay"
-        if command[0]=="apply background filter number":
+        if command[0]=="background number":
+            if command[1] ==1:
+                effect = "easter"
+            elif command[1] ==2:
+                effect = "lofoten"
+            elif command[1] ==3:
+                effect = "vacay"
             self.send_msg("backgorund_on","Controller",self.officeName+"camera",effect,"ttm4115/team_1/project/camera" +self.officeName[-1])
-        elif command[0]=="apply face filter number":
+        elif command[0]=="face number":
+            if command[1] ==1:
+                effect = "dog"
+            elif command[1] ==2:
+                effect = "hat_glasses"
             self.send_msg("fliter_on","Controller",self.officeName+"camera",effect,"ttm4115/team_1/project/camera" +self.officeName[-1])
-        elif command[0]=="remove face filter":
+        elif command[0]=="remove face":
             self.send_msg("fliter_off","Controller",self.officeName+"camera",None,"ttm4115/team_1/project/camera" +self.officeName[-1])
-        elif command[0]=="remove background filter":
+        elif command[0]=="remove background":
             self.send_msg("backgorund_off","Controller",self.officeName+"camera",None,"ttm4115/team_1/project/camera" +self.officeName[-1])
 
 """

@@ -1,6 +1,6 @@
 import json
 from invite_link import InviteLink
-from src.mqtt_client import MqttClient
+from mqtt_client import MqttClient
 
 TOPIC_CONNECT = 'ttm4115/team_1/project/connect'
 

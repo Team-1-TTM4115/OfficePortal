@@ -21,12 +21,14 @@ TEXT_TO_NUMBER = {
 }
 
 def text_to_number(text, keyword):
+    print(text)
+    print(keyword)
     text_num = get_number_from_text(text, keyword)
     return TEXT_TO_NUMBER[text_num]
 
 
 def get_number_from_text(text, keyword):
-    return re.findall(r'%s(.+)' % keyword, text)[0]
+    return re.findall(r'%s(.+)' % keyword, text)[0].strip()
 
 class VoiceRecognition:
     def __init__(self):

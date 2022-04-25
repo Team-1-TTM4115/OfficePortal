@@ -2,14 +2,18 @@ import time
 import logging
 import json
 from tkinter.constants import NW
+import tkinter as tk
 
 
 from threading import Thread
 import base64
+from turtle import Screen
+from matplotlib.pyplot import show
 import numpy as np
 import cv2
 from PIL import Image, ImageTk
 from mqtt_client import MqttClient
+from threading import Thread
 
 
 FPS = 30
@@ -63,14 +67,20 @@ class StreamVideoReciver():
         img = cv2.imdecode(buff, cv2.IMREAD_COLOR)
         return img
 
-    def __init__(self, canvas, height, width):
+    def set_canvas(self, canvas, height, width, gui_frame):
+        self.canvas = canvas
+        self.height = height
+        self.width = width
+        self.gui_frame = gui_frame
+
+    def __init__(self):
         self.number = 7
         self.name = "office" + str(self.number) + "reciver"
         self.active = False
         self.framesaudio = []
         self.recivefrom = None
 
-        # get the logger object for the component
+        # get sthe logger object for the component
         self._logger = logging.getLogger(__name__)
         print("logging under name {}.".format(__name__))
         self._logger.info("Starting Component")
@@ -89,11 +99,16 @@ class StreamVideoReciver():
         # t2.start()
 
         # for tkinter
-        self.canvas = canvas
-        self.height = height
-        self.width = width
         self.frame = None
         self.started_stream = False
+        self.canvas = None
+        self.filter_frame = None
+        self.height = None
+        self.width = None
+        self.showing = False
+
+    def set_is_showing(self, is_showing):
+        self.showing = is_showing
 
     def start(self):
         while True:
@@ -111,13 +126,44 @@ class StreamVideoReciver():
             self.show_stream()
 
     def show_stream(self):
-        frame = cv2.resize(self.frame, (self.height, self.width))
+        frame = cv2.resize(self.frame, (self.width, self.height))
         self.image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)  # to RGB
         self.image = Image.fromarray(self.image)  # to PIL format
         self.image = ImageTk.PhotoImage(self.image)  # to ImageTk format
+        #print("is showing",self.main_screen.showing_filter)
         # Update image
+        if self.showing:
+            self.create_filter_page(self.gui_frame)
+        else:
+            #print(self.filter_frame)
+            #print(self.filter_frame != None, "shalalalala")
+            if self.filter_frame != None:
+                #print("")
+                self.filter_frame.destroy()
+                self.filter_frame = None
         self.canvas.create_image(0, 0, anchor=NW, image=self.image)
         self.canvas.after(10, self.show_stream)
+
+    def create_filter_page(self, parent_frame: tk.Frame):
+        """
+        Temp filter frame.
+        :param root:
+        :return:
+        """
+        filters = ['dog', 'glasses', 'easter', 'lofoten', 'vacation', ]
+        if self.filter_frame is None:
+            self.filter_frame = tk.Frame(parent_frame, bg='black')
+            self.filter_frame.place(x=self.width / 2, y=self.height / 8, anchor=tk.CENTER)
+            current = 'misc'
+
+            for index in range(len(filters)):
+                if current == filters[index]:
+                    button1 = tk.Label(self.filter_frame, text=filters[index], bg='grey', fg='white', font=("Helvetica", 40),
+                                        borderwidth=10, relief=tk.GROOVE, )
+                    button1.grid(row=0, column=index, padx=10, pady=10)
+                else:
+                    button1 = tk.Label(self.filter_frame, text=filters[index], bg='grey', fg='white', font=("Helvetica", 40))
+                    button1.grid(row=0, column=index, padx=10, pady=10)
 
 
 if __name__ == "__main__":

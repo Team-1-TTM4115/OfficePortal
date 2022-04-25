@@ -24,7 +24,8 @@ class Screen:
         self.qr_reader = None
         self.waiting_nr = 1
         self.img_path = r"../img/gallery_img.jpg"
-        self.abs_path = r"/Users/rojahno/Datateknologi/DKS/OfficePortal/src/img/gallery_img.jpg"
+        self.abs_path = r"C:\Users\ingeb\Documents\universtiet\NTNU\tredje\var\Desgin\project_design\OfficePortal\src\img\gallery_img.jpg"
+        self.stream_video_reciver=None
 
     def configure_startup_screen(self) -> None:
         """
@@ -81,6 +82,7 @@ class Screen:
         # TODO: Remove from here. GUI controller should be responsible for this.
         # self.create_start_page(frame_container)
         self.create_gallery_page()
+        self.stream_video_reciver=StreamVideoReciver()
         # self.create_video_page()
         # self.create_qr_page()
         # self.create_waiting_page()
@@ -132,16 +134,21 @@ class Screen:
         Temp video frame.
         :return:
         """
-        show_filter = True
         video_frame = tk.Frame(self.frame_container, bg='black')
         self.frames['video_frame'] = video_frame
         video_frame.grid(row=0, column=0, sticky="nsew", )
 
         canvas = Canvas(video_frame, bg='black', borderwidth=0)
         canvas.pack(fill=BOTH, expand=YES)
-        StreamVideoReciver(canvas, self.width, self.height)
-        if show_filter:
-            self.create_filter_page(video_frame)
+        self.stream_video_reciver.set_canvas(canvas=canvas, height=self.height, width=self.width,gui_frame= video_frame)
+
+    def show_filter(self):
+        self.stream_video_reciver.set_is_showing(True) 
+
+    def hide_filter(self):
+        print("skjer dette?")
+        self.stream_video_reciver.set_is_showing(False) 
+        print(self.stream_video_reciver.showing)
 
     def create_gallery_page(self):
         gallery_frame = tk.Frame(self.frame_container, bg='black')
@@ -152,7 +159,7 @@ class Screen:
         canvas.pack(fill=BOTH, expand=YES)
         button = tk.Button(gallery_frame, text="Go to filter", )
         button.pack(anchor=CENTER)
-        load = Image.open(self.img_path)
+        load = Image.open(self.abs_path)
         rezized = load.resize((self.width, self.height), Image.ANTIALIAS)
         image = ImageTk.PhotoImage(rezized)
         self.frame_container.image = image  # to prevent the image garbage collected.
@@ -169,26 +176,6 @@ class Screen:
         :return: None
         """
         self.frames['waiting_frame'].destroy()
-
-    def create_filter_page(self, parent_frame: tk.Frame):
-        """
-        Temp filter frame.
-        :param root:
-        :return:
-        """
-        filters = ['dog', 'glasses', 'easter', 'lofoten', 'vacation', ]
-        filter_container = tk.Frame(parent_frame, bg='black')
-        filter_container.place(x=self.width / 2, y=self.height / 8, anchor=CENTER)
-        current = 'misc'
-
-        for index in range(len(filters)):
-            if current == filters[index]:
-                button1 = tk.Label(filter_container, text=filters[index], bg='grey', fg='white', font=("Helvetica", 40),
-                                   borderwidth=10, relief=GROOVE, )
-                button1.grid(row=0, column=index, padx=10, pady=10)
-            else:
-                button1 = tk.Label(filter_container, text=filters[index], bg='grey', fg='white', font=("Helvetica", 40))
-                button1.grid(row=0, column=index, padx=10, pady=10)
 
     def create_qr_page(self):
         """

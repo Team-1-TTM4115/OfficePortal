@@ -38,10 +38,11 @@ class GuiController:
 
     def show_filter_menu(self):
         # self.screen.create_filter_page()
-        self.screen.show_frame('filter_frame')
+        self.screen.show_filter()
 
     def close_filter_menu(self):
-        pass
+        print("blir denne kjørt")
+        self.screen.hide_filter()
 
     def start(self):
         self.screen.run()

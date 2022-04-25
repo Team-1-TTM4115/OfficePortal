@@ -12,11 +12,11 @@ import cvzone
 from cvzone.SelfiSegmentationModule import SelfiSegmentation
 import stmpy
 
-from src.gui.camera import Camera
+from gui.camera import Camera
 
 MQTT_BROKER = "mqtt.item.ntnu.no"
 MQTT_PORT = 1883
-FPS =30
+FPS =20
 
 MQTT_TOPIC_SENSOR = 'ttm4115/team_1/project/sensor'
 
@@ -125,7 +125,7 @@ class StreamVideo:
         return fc
 
     def __init__(self):
-        self.number =1
+        self.number =7
         self.name= "office"+str(self.number)
         self.sendTo =None
         self.active =False
@@ -137,11 +137,11 @@ class StreamVideo:
         # Fliter
         self.face = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
         self.hat = cv2.imread(
-            r'C:\Users\ingeb\Documents\universtiet\NTNU\tredje\var\Desgin\project_design\OfficePortal\src\I+E\hat.png')
+            r'C:\Users\ingeb\Documents\universtiet\NTNU\tredje\var\Desgin\project_design\OfficePortal\src\connection_and_streaming\hat.png')
         self.glass = cv2.imread(
-            r'C:\Users\ingeb\Documents\universtiet\NTNU\tredje\var\Desgin\project_design\OfficePortal\src\I+E\glasses.png')
+            r'C:\Users\ingeb\Documents\universtiet\NTNU\tredje\var\Desgin\project_design\OfficePortal\src\connection_and_streaming\glasses.png')
         self.dog = cv2.imread(
-            r'C:\Users\ingeb\Documents\universtiet\NTNU\tredje\var\Desgin\project_design\OfficePortal\src\I+E\dog.png')
+            r'C:\Users\ingeb\Documents\universtiet\NTNU\tredje\var\Desgin\project_design\OfficePortal\src\connection_and_streaming\dog.png')
         self.filter = None
 
         # get the logger object for the component
@@ -161,15 +161,15 @@ class StreamVideo:
         thread = Thread(target=self.mqtt_client.loop_start())
         thread.start()
         
-        cap = Camera(0)
+        cap = Camera(0,cv2.CAP_DSHOW)
         self.segmentor = SelfiSegmentation()
-        self.listImg = os.listdir(r"C:\Users\ingeb\Documents\universtiet\NTNU\tredje\var\Desgin\project_design\OfficePortal\src\I+E\BackgroundFilters")
-        listImg = os.listdir(r"C:\Users\ingeb\Documents\universtiet\NTNU\tredje\var\Desgin\project_design\OfficePortal\src\I+E\BackgroundFilters")
+        self.listImg = os.listdir(r"C:\Users\ingeb\Documents\universtiet\NTNU\tredje\var\Desgin\project_design\OfficePortal\src\connection_and_streaming\BackgroundFilters")
+        listImg = os.listdir(r"C:\Users\ingeb\Documents\universtiet\NTNU\tredje\var\Desgin\project_design\OfficePortal\src\connection_and_streaming\BackgroundFilters")
         self.imgList = []
         self.background = None
 
         for imgPath in listImg:
-            path = 'C:/Users/ingeb/Documents/universtiet/NTNU/tredje/var/Desgin/project_design/OfficePortal/src/I+E/BackgroundFilters'
+            path = 'C:/Users/ingeb/Documents/universtiet/NTNU/tredje/var/Desgin/project_design/OfficePortal/src/connection_and_streaming/BackgroundFilters'
             imagePath = os.path.join(path, imgPath)
             img = cv2.imread(imagePath)
             self.imgList.append(img)
@@ -253,7 +253,7 @@ class StreamVideo:
 
     def exit(self):
         try:
-            if keyboard.is_pressed("Escape"):
+            if False:# keyboard.is_pressed("Escape"):
                 return False
             else:
                 return True

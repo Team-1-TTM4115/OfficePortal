@@ -39,7 +39,7 @@ class QrReader:
 
     def capture_video(self):
         # TODO: Integrate into gui somehow
-        camera = Camera(0)
+        camera = Camera(0, cv2.CAP_DSHOW)
         self.cap = camera
 
         self.canvas = tkinter.Canvas(self.gui_window, bg='black', borderwidth=0)
@@ -49,6 +49,7 @@ class QrReader:
     def update_qr_frame(self):
         # Get the latest frame and convert image format
         ret, frame = self.cap.read()
+
         frame = cv2.resize(frame, (self.height, self.width))
         frame = self.__read_barcodes(frame)
         self.image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)  # to RGB

@@ -5,10 +5,10 @@ from .voice_recognition import VoiceRecognition, text_to_number
 VOICE_COMMANDS = [
     {"command": ["open menu", "change_session_view"]},
     {"command": ["close menu", "change_session_view"]},
-    {"command": ["remove background filter", "change_session_view"]},
-    {"command": ["remove face filter", "change_session_view"]},
-    {"command": ["apply background filter number", "choose_filter"]},
-    {"command": ["apply face filter number", "choose_filter"]},
+    {"command": ["remove background", "change_session_view"]},
+    {"command": ["remove face", "change_session_view"]},
+    {"command": ["background number", "choose_filter"]},
+    {"command": ["face number", "choose_filter"]},
     {"command": ["change connection", "change_connection"]},
 ]
 
@@ -75,14 +75,14 @@ class VoiceCommandComponent:
                     if command["command"][0] in response["recording"].lower():
                         found = True
                         recognized_command = command["command"][0]
-                        if recognized_command == "apply background filter number":
+                        if recognized_command == "background number":
                             item_num = text_to_number(
-                                response["recording"], "apply background filter number "
+                                response["recording"], "background number"
                             )
                             recognized_command = [recognized_command, item_num]
-                        elif recognized_command == "apply face filter number":
+                        elif recognized_command == "face number":
                             item_num = text_to_number(
-                                response["recording"], "apply face filter number "
+                                response["recording"], "face number"
                             )
                             recognized_command = [recognized_command, item_num]
                         self.on_command_found(recognized_command, command["command"][1])
