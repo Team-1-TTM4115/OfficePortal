@@ -64,7 +64,7 @@ class StreamVideoReciver():
         return img
 
     def __init__(self, canvas, height, width):
-        self.number = 1
+        self.number = 7
         self.name = "office" + str(self.number) + "reciver"
         self.active = False
         self.framesaudio = []

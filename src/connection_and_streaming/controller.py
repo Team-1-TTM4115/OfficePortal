@@ -66,7 +66,7 @@ class ControllerLogic:
             "trigger": "idle_timeout",
             "source": "waiting_for_partner",
             "target": "connected",
-            "effect": "enter_gallery_mode; log_in_connected",
+            "effect": "enter_gallery_mode; stop_listening; log_in_connected",
         }
 
         t7 = { 
@@ -87,7 +87,7 @@ class ControllerLogic:
             "trigger": "idle_timeout",
             "source": "active_session",
             "target": "connected",
-            "effect": "send_I_am_idle; enter_gallery_mode; stopp_listening; log_in_connected",
+            "effect": "send_I_am_idle; enter_gallery_mode; stop_listening; log_in_connected",
         }
         t10 = {
             "trigger": "partner_idle",
@@ -128,14 +128,15 @@ class ControllerLogic:
         'new_connection': 'send_left_connection',}
 
         waiting_for_partner = {'name': 'waiting_for_partner',
-        'entry':'start_timer("resend_timer", 20000); send_partner_active; enter_waiting_mode',
+        'entry':'start_timer("resend_timer", 20000); send_partner_active; enter_waiting_mode; controller_is_listing',
         'qr_code_scanned': 'send_left_connection',
         'new_connection': 'send_left_connection',
         'connection_successful': 'send_change_connection; send_partner_active;',
         'resend_timer': 'send_partner_active; start_timer("resend_timer", 20000)',
         'movement_detected':'start_timer("idle_timeout", 60000)',
         'change_connection': 'enter_qr_scanner',
-        'qr_fail': 'enter_waiting_mode',}
+        'qr_fail': 'enter_waiting_mode',
+        'exit':'controller_is_not_listing'}
         
         not_connected = {'name': 'not_connected',
         'change_connection': 'enter_qr_scanner',
@@ -159,6 +160,13 @@ class ControllerLogic:
             self.sensor_on()
             return "connected"
 
+    def controller_is_listing(self):
+        self.component.listening_for_call=True
+
+    def controller_is_not_listing(self):
+        self.component.listening_for_call=True
+
+
     def log_in_connected(self):
         self._logger.info("state=connected")
 
@@ -181,8 +189,8 @@ class ControllerLogic:
 
     def start_listening(self):
         self.component.start_listening()
-    def stopp_listening(self):
-        self.component.stopp_listening()
+    def stop_listening(self):
+        self.component.stop_listening()
 
     def turn_on_camera(self):
         self.component.turn_on_camera()
@@ -269,7 +277,8 @@ class ControllerComponent:
                 self.stm_driver.send("qr_fail", "Controller")
         elif msg.topic == "ttm4115/team_1/project/controller":
             data =self.load_json(msg)
-            if data["command"] == "partner active" and data["sender"] ==self.connection and data["reciver"] == self.officeName and data["answer"]=="first":
+            if (data["command"] == "partner active" and data["sender"] ==self.connection and 
+            data["reciver"] == self.officeName and data["answer"]=="first" and self.listening_for_call):
                 self.send_msg("partner active",self.officeName,self.connection,"Not first",MQTT_TOPIC_CONTROLLER)
                 self.stm_driver.send("partner_joined", "Controller")
             elif data["command"] == "I am idle" and data["sender"] ==self.connection and data["reciver"] == self.officeName:
@@ -278,8 +287,10 @@ class ControllerComponent:
     def initialize_stm(self):
 
         #Here is the office name
-        self.officeName = "office1"
+        self.officeName = "office7"
         self.connection = None
+
+        self.listening_for_call =False
 
         #Here you the define which sensors
         self.sensor=self.officeName+"sensor"
@@ -383,7 +394,7 @@ class ControllerComponent:
         self.stm_driver.send("enter_video_call", "gui_stm")
     def start_listening(self):
         self.stm_driver.send("start_listening", "voice_stm")
-    def stopp_listening(self):
+    def stop_listening(self):
         self.stm_driver.send("stop_listening", "voice_stm")
 
     def trigger_change(self,command):
