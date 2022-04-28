@@ -5,8 +5,9 @@ import json
 import time 
 import pyaudio
 from threading import Thread
+import stmpy
 
-CHUNK = 1024
+CHUNK = 2048#1024
 FORMAT = pyaudio.paInt16
 CHANNELS =1
 RATE = 44100
@@ -15,6 +16,39 @@ MQTT_BROKER = "mqtt.item.ntnu.no"
 MQTT_PORT = 1883
 MQTT_TOPIC_AUDIO = "ttm4115/team_1/project/audio"
 MQTT_TOPIC_CAMERA = "ttm4115/team_1/project/camera"
+
+class StreamAudioLogic:
+
+    def __init__(self, name, component):
+        self._logger = logging.getLogger(__name__)
+        self.name = name
+        self.id = name
+        self.component = component
+
+        t0 = { 
+            "source": "initial",
+            "target": "off",
+        }
+
+        t1 = {
+            "trigger": "turn_audio_on",
+            "source": "off",
+            "target": "on",
+            "effect": "start_timer('adiuo_timer', 45); audio_on",
+        }
+        t2 = {
+            "trigger": "turn_audio_off",
+            "source": "on",
+            "target": "off",
+        }
+
+        on = {"name": "on",
+        "audio_timer": "start_timer('sensor_timer', 45); check_movement",}
+
+    def audio_on(self):
+        self.component.audio_on()
+
+
 
 class StreamAudio():
     def on_connect(self, client, userdata, flags, rc):
@@ -87,18 +121,22 @@ class StreamAudio():
         except:
             pass
 
+    def audio_on(self):
+        pass
+
     def send_msg(self,msg,sender,reciver,timestamp,answer,where):
         command = {"command": msg, "sender": sender, "reciver": reciver,"time": timestamp,"answer": answer} 
         payload = json.dumps(command)
         self.mqtt_client.publish(where, payload)
 
-debug_level = logging.DEBUG
-logger = logging.getLogger(__name__)
-logger.setLevel(debug_level)
-ch = logging.StreamHandler()
-ch.setLevel(debug_level)
-formatter = logging.Formatter('%(asctime)s - %(name)-12s - %(levelname)-8s - %(message)s')
-ch.setFormatter(formatter)
-logger.addHandler(ch)
+if __name__ =="__main__":
+    debug_level = logging.DEBUG
+    logger = logging.getLogger(__name__)
+    logger.setLevel(debug_level)
+    ch = logging.StreamHandler()
+    ch.setLevel(debug_level)
+    formatter = logging.Formatter('%(asctime)s - %(name)-12s - %(levelname)-8s - %(message)s')
+    ch.setFormatter(formatter)
+    logger.addHandler(ch)
 
-t = StreamAudio()
+    t = StreamAudio()

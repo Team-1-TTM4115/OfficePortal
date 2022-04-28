@@ -73,8 +73,9 @@ class StreamVideoReciver():
         self.width = width
         self.gui_frame = gui_frame
 
-    def __init__(self):
-        self.number = 7
+    def __init__(self,name):
+
+        self.number = name[-1]
         self.name = "office" + str(self.number) + "reciver"
         self.active = False
         self.framesaudio = []

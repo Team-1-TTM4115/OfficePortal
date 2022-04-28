@@ -117,8 +117,8 @@ class ControllerLogic:
         }
 
         active_session = {'name': 'active_session',
-        'entry':'send_partner_active; turn_on_reciver; turn_on_camera; turn_on_microphone; enter_video_call',
-        'exit':'turn_reciver_off; turn_camera_off; turn_microphone_off',
+        'entry':'send_partner_active; turn_on_reciver; vidoe_capture_on; turn_on_microphone; enter_video_call',
+        'exit':'turn_reciver_off; vidoe_capture_off; turn_microphone_off',
         'movement_detected': 'start_timer("idle_timeout", 60000)',
         'change_connection': 'enter_qr_scanner',
         'qr_fail': ' enter_video_call',
@@ -193,10 +193,10 @@ class ControllerLogic:
     def stop_listening(self):
         self.component.stop_listening()
 
-    def turn_on_camera(self):
-        self.component.turn_on_camera()
-    def turn_camera_off(self):
-        self.component.turn_camera_off()
+    def vidoe_capture_on(self):
+        self.component.vidoe_capture_on()
+    def vidoe_capture_off(self):
+        self.component.vidoe_capture_off()
 
     def turn_on_reciver(self):
         self.component.turn_on_reciver()
@@ -285,10 +285,10 @@ class ControllerComponent:
             elif data["command"] == "I am idle" and data["sender"] ==self.connection and data["reciver"] == self.officeName:
                 self.stm_driver.send("partner_idle", "Controller")
 
-    def initialize_stm(self):
+    def initialize_stm(self,name):
 
         #Here is the office name
-        self.officeName = "office7"
+        self.officeName = name#"office7"
         self.connection = None
 
         self.listening_for_call =False
@@ -300,6 +300,15 @@ class ControllerComponent:
         self._logger = logging.getLogger(__name__)
         print('logging under name {}.'.format(__name__))
         self._logger.info('Starting Component')
+
+        debug_level = logging.DEBUG
+        logger = logging.getLogger(__name__)
+        logger.setLevel(debug_level)
+        ch = logging.StreamHandler()
+        ch.setLevel(debug_level)
+        formatter = logging.Formatter('%(asctime)s - %(name)-12s - %(levelname)-8s - %(message)s')
+        ch.setFormatter(formatter)
+        logger.addHandler(ch)
 
         # create a new MQTT client
         self._logger.debug('Connecting to MQTT broker {} at port {}'.format(MQTT_BROKER, MQTT_PORT))
@@ -351,8 +360,9 @@ class ControllerComponent:
         self.send_msg("I am idle",self.officeName,self.connection,None,MQTT_TOPIC_CONTROLLER)
 
     def sensor_on(self):
+        self.stm_driver.send("turn_sensor_on", "streamvideo")
         #hva skjer hvis sensor ikke er på så den ikke blir skrudd på!!?
-        self.send_msg("start",self.officeName,self.sensor,None,MQTT_TOPIC_SENSOR)
+        #self.send_msg("start",self.officeName,self.sensor,None,MQTT_TOPIC_SENSOR)
         print("sensor_on")
 
     def send_msg(self,msg,sender,reciver,answer,where):
@@ -361,19 +371,23 @@ class ControllerComponent:
         self.mqtt_client.publish(where, payload)
 
     def sensor_off(self):
-        self.send_msg("stop",self.officeName,self.sensor,None,MQTT_TOPIC_SENSOR)
+        #self.send_msg("stop",self.officeName,self.sensor,None,MQTT_TOPIC_SENSOR)
+        self.stm_driver.send("turn_sensor_off", "streamvideo")
         print("sensor_off")
 
-    def turn_camera_off(self):
-        self.send_msg("streamstop","Controller",self.officeName+"camera",self.connection+"reciver","ttm4115/team_1/project/camera" +self.officeName[-1])
+    def vidoe_capture_off(self):
+        self.stm_driver.send("turn_filter_off", "streamvideo")
+        self.stm_driver.send("turn_background_off", "streamvideo")
+        self.stm_driver.send("vidoe_capture_off", "streamvideo")
+        #self.send_msg("streamstop","Controller",self.officeName+"camera",self.connection+"reciver","ttm4115/team_1/project/camera" +self.officeName[-1])
         print("turn_camera_off")
 
-    def turn_on_camera(self):
-        self.send_msg("streamstart","Controller",self.officeName+"camera",self.connection+"reciver","ttm4115/team_1/project/camera" +self.officeName[-1])
+    def vidoe_capture_on(self):
+        self.stm_driver.send("vidoe_capture_on", "streamvideo", kwargs={"send_to": self.connection+"reciver"})
+        #self.send_msg("streamstart","Controller",self.officeName+"camera",self.connection+"reciver","ttm4115/team_1/project/camera" +self.officeName[-1])
         print("turn_on_camera")
     
     def turn_on_reciver(self):
-        time.sleep(1)
         self.send_msg("streamstart","Controller",self.officeName+"reciver",self.connection,MQTT_TOPIC_RECIVER)
         print("turn_on_reciver")
     def turn_reciver_off(self):
@@ -381,6 +395,7 @@ class ControllerComponent:
         print("turn_reciver_off")
 
     def turn_on_microphone(self):
+        #self.stm_driver.send("turn_on_microphone", "streamaudio", kwargs={"send_to": self.connection+"reciver"})
         self.send_msg("streamstart","Controller",self.officeName+"audio",self.connection+"reciver","ttm4115/team_1/project/audio"+self.officeName[-1])
         print("turn_on_reciver")
     def turn_microphone_off(self):
@@ -414,17 +429,21 @@ class ControllerComponent:
                 effect = "lofoten"
             elif command[1] ==3:
                 effect = "vacay"
-            self.send_msg("backgorund_on","Controller",self.officeName+"camera",effect,"ttm4115/team_1/project/camera" +self.officeName[-1])
+            self.stm_driver.send("turn_background_on", "streamvideo", kwargs={"effect": effect})
+            #self.send_msg("backgorund_on","Controller",self.officeName+"camera",effect,"ttm4115/team_1/project/camera" +self.officeName[-1])
         elif command[0]=="face number":
             if command[1] ==1:
                 effect = "dog"
             elif command[1] ==2:
                 effect = "hat_glasses"
-            self.send_msg("fliter_on","Controller",self.officeName+"camera",effect,"ttm4115/team_1/project/camera" +self.officeName[-1])
+            self.stm_driver.send("turn_filter_on", "streamvideo", kwargs={"effect": effect})
+            #self.send_msg("fliter_on","Controller",self.officeName+"camera",effect,"ttm4115/team_1/project/camera" +self.officeName[-1])
         elif command[0]=="remove face":
-            self.send_msg("fliter_off","Controller",self.officeName+"camera",None,"ttm4115/team_1/project/camera" +self.officeName[-1])
+            self.stm_driver.send("turn_filter_off", "streamvideo")
+            #self.send_msg("fliter_off","Controller",self.officeName+"camera",None,"ttm4115/team_1/project/camera" +self.officeName[-1])
         elif command[0]=="remove background":
-            self.send_msg("backgorund_off","Controller",self.officeName+"camera",None,"ttm4115/team_1/project/camera" +self.officeName[-1])
+            self.stm_driver.send("turn_background_off", "streamvideo")
+            #self.send_msg("backgorund_off","Controller",self.officeName+"camera",None,"ttm4115/team_1/project/camera" +self.officeName[-1])
 
 """
 debug_level = logging.DEBUG

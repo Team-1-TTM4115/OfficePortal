@@ -11,7 +11,7 @@ class GuiSTM:
 
 
     def __init__(self,controller):
-        self.screen = Screen()
+        self.screen = Screen(controller.cap,controller.office_name)
         self.gui_controller = controller
         #self.gui_controller = GuiController()
 

@@ -37,16 +37,16 @@ class sendstarttoall():
         # Connect to the broker
         self.mqtt_client.connect(MQTT_BROKER, MQTT_PORT)
         # start the internal loop to process MQTT messages
-        #self.send_msg("streamstart","Controller","office7reciver","office8",MQTT_TOPIC_RECIVER)
-        #self.send_msg("streamstart","Controller","office8reciver","office7",MQTT_TOPIC_RECIVER)
+        self.send_msg("streamstart","Controller","office7reciver","office8",MQTT_TOPIC_RECIVER)
+        self.send_msg("streamstart","Controller","office8reciver","office7",MQTT_TOPIC_RECIVER)
         
-        #self.send_msg("streamstart","Controller","office7camera","office8reciver","ttm4115/team_1/project/camera7")
-        #self.send_msg("streamstart","Controller","office7audio","office8reciver","ttm4115/team_1/project/audio7")
+        self.send_msg("streamstart","Controller","office7camera","office8reciver","ttm4115/team_1/project/camera7")
+        self.send_msg("streamstart","Controller","office7audio","office8reciver","ttm4115/team_1/project/audio7")
 
-        #self.send_msg("streamstart","Controller","office8camera","office7reciver","ttm4115/team_1/project/camera8")
-        #self.send_msg("streamstart","Controller","office8audio","office7reciver","ttm4115/team_1/project/audio8")
+        self.send_msg("streamstart","Controller","office8camera","office7reciver","ttm4115/team_1/project/camera8")
+        self.send_msg("streamstart","Controller","office8audio","office7reciver","ttm4115/team_1/project/audio8")
 
-        self.send_msg("backgorund_on","Controller","office7camera","lofoten","ttm4115/team_1/project/camera7")
+        #self.send_msg("backgorund_on","Controller","office7camera","lofoten","ttm4115/team_1/project/camera7")
         #self.send_msg("fliter_off","Controller","office1camera","hat_glasses","ttm4115/team_1/project/camera1")
 
 

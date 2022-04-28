@@ -15,9 +15,9 @@ TOPIC_CONNECT = 'ttm4115/team_1/project/connect'
 
 
 class QrReader:
-    def __init__(self, frame, heigth, width, office_name):
+    def __init__(self, frame, heigth, width, office_name,cap):
         self.__mqtt_client = MqttClient("QrReader")
-        self.cap = None
+        self.cap = cap#Camera(0, cv2.CAP_DSHOW)#None
         self.gui_window = frame
         self.image = None
         self.canvas = None
@@ -39,10 +39,10 @@ class QrReader:
 
     def capture_video(self):
         # TODO: Integrate into gui somehow
-        camera = Camera(0, cv2.CAP_DSHOW)
-        self.cap = camera
+        #camera = Camera(0, cv2.CAP_DSHOW)
+        #self.cap = camera
 
-        self.canvas = tkinter.Canvas(self.gui_window, bg='black', borderwidth=0)
+        self.canvas = tkinter.Canvas(self.gui_window, bg='white', borderwidth=0)
         self.canvas.pack(fill=tkinter.BOTH, expand=tkinter.YES)
         self.update_qr_frame()
 

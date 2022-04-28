@@ -13,7 +13,7 @@ from gui.news import News
 
 class Screen:
 
-    def __init__(self):
+    def __init__(self,cap,name):
         # Gets the requested values of the height and width.
         self.root = tk.Tk()
         self.root.withdraw()
@@ -26,6 +26,8 @@ class Screen:
         self.img_path = r"../img/gallery_img.jpg"
         self.abs_path = r"C:\Users\ingeb\Documents\universtiet\NTNU\tredje\var\Desgin\project_design\OfficePortal\src\img\gallery_img.jpg"
         self.stream_video_reciver=None
+        self.cap=cap
+        self.officeName=name
 
     def configure_startup_screen(self) -> None:
         """
@@ -82,7 +84,7 @@ class Screen:
         # TODO: Remove from here. GUI controller should be responsible for this.
         # self.create_start_page(frame_container)
         self.create_gallery_page()
-        self.stream_video_reciver=StreamVideoReciver()
+        self.stream_video_reciver=StreamVideoReciver(self.officeName)
         # self.create_video_page()
         # self.create_qr_page()
         # self.create_waiting_page()
@@ -186,7 +188,7 @@ class Screen:
             qr_frame = tk.Frame(self.frame_container, bg='black')
             self.frames['qr_frame'] = qr_frame
             qr_frame.grid(row=0, column=0, sticky="nsew")
-            self.qr_reader = QrReader(qr_frame, self.width, self.height, "office1")
+            self.qr_reader = QrReader(qr_frame, self.width, self.height, self.officeName,self.cap)
 
             self.qr_reader.capture_video()
         else:

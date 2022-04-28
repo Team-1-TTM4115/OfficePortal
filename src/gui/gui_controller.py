@@ -5,8 +5,10 @@ from gui.gui_stm import GuiSTM
 
 
 class GuiController:
-    def __init__(self):
-        self.screen = Screen()
+    def __init__(self,cap,name):
+        self.office_name = name
+        self.cap=cap
+        self.screen = Screen(self.cap,self.office_name)
         self.stm = None
         self.stm_driver = None
 

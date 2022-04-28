@@ -1,3 +1,9 @@
+from concurrent.futures import process
+import multiprocessing
+
+
+from multiprocessing import Process
+from threading import Thread
 import stmpy
 
 from .voice_recognition import VoiceRecognition, text_to_number
@@ -24,6 +30,9 @@ class VoiceCmdSTM:
 
     def voice_cmd_listening(self):
         self.vc_component.voice_cmd_listening()
+        #t =Process(target=self.vc_component.voice_cmd_listening())
+        #t.start()
+        
 
     def send_command(self, command, trigger):
         self.vc_component.send_command(command, trigger)
