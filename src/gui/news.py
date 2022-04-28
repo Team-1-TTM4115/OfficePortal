@@ -1,7 +1,6 @@
 import tkinter as tk
 from tkinter import *
-import time
-from newsapi import NewsApiClient
+from newsapi.newsapi_client import NewsApiClient
 
 
 class News:

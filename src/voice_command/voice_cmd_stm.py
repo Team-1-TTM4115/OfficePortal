@@ -1,7 +1,6 @@
 from concurrent.futures import process
 import multiprocessing
 
-
 from multiprocessing import Process
 from threading import Thread
 import stmpy
@@ -18,6 +17,7 @@ VOICE_COMMANDS = [
     {"command": ["change connection", "change_connection"]},
 ]
 
+
 class VoiceCmdSTM:
     def __init__(self, vc_component):
         self.vc_component = vc_component
@@ -30,15 +30,13 @@ class VoiceCmdSTM:
 
     def voice_cmd_listening(self):
         self.vc_component.voice_cmd_listening()
-        #t =Process(target=self.vc_component.voice_cmd_listening())
-        #t.start()
-        
 
     def send_command(self, command, trigger):
         self.vc_component.send_command(command, trigger)
 
     def send_err_msg(self, e_msg):
         self.vc_component.send_err_msg(e_msg)
+
 
 class VoiceCommandComponent:
     def __init__(self):
@@ -64,7 +62,8 @@ class VoiceCommandComponent:
         s2 = {"name": "known_cmd", "stop_listening": "defer"}
         s3 = {"name": "unknown_cmd", "stop_listening": "defer"}
 
-        machine =  stmpy.Machine(name="voice_stm", transitions=[t0, t1, t2, t3, t4, t5, t6], states=[s0, s1, s2, s3], obj=voice_cmd_stm)
+        machine = stmpy.Machine(name="voice_stm", transitions=[t0, t1, t2, t3, t4, t5, t6], states=[s0, s1, s2, s3],
+                                obj=voice_cmd_stm)
         voice_cmd_stm.stm = machine
 
         self.stm = machine
@@ -103,13 +102,11 @@ class VoiceCommandComponent:
             self.on_command_not_found(f"I was not able to process your command: {e}")
 
     def send_command(self, command, trigger):
-        # TODO: send command to the other STM
         print(f"Command used: {command}")
         print(f"Sending trigger: {trigger} to STM with command {command}")
         self.stm_driver.send(trigger, "Controller", kwargs={"command": command})
         self.stm_driver.send("continue_listening", "voice_stm")
 
     def send_err_msg(self, e_msg):
-        # TODO: send error message to the other STM
         print(e_msg)
         self.stm_driver.send("continue_listening", "voice_stm")

@@ -1,23 +1,18 @@
 import json
 import tkinter
 from tkinter import NW
-
 import cv2
 from PIL import Image, ImageTk
-from pyzbar import pyzbar
 from pyzbar.pyzbar import decode
-
-from gui.camera import Camera
 from mqtt_client import MqttClient
-
 
 TOPIC_CONNECT = 'ttm4115/team_1/project/connect'
 
 
 class QrReader:
-    def __init__(self, frame, heigth, width, office_name,cap):
+    def __init__(self, frame, heigth, width, office_name, cap):
         self.__mqtt_client = MqttClient("QrReader")
-        self.cap = cap#Camera(0, cv2.CAP_DSHOW)#None
+        self.cap = cap
         self.gui_window = frame
         self.image = None
         self.canvas = None
@@ -34,14 +29,9 @@ class QrReader:
             cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
 
             self.send_msg(barcode_info, self.office_name, TOPIC_CONNECT)
-            # TODO: Do something after scanning a code. Like trying to connect?
         return frame
 
     def capture_video(self):
-        # TODO: Integrate into gui somehow
-        #camera = Camera(0, cv2.CAP_DSHOW)
-        #self.cap = camera
-
         self.canvas = tkinter.Canvas(self.gui_window, bg='white', borderwidth=0)
         self.canvas.pack(fill=tkinter.BOTH, expand=tkinter.YES)
         self.update_qr_frame()

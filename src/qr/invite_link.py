@@ -18,11 +18,6 @@ class InviteLink:
         time_now = datetime.datetime.now()
         return self.__expire <= time_now
 
-    def show_image(self):
-        """ Shows the image on screen """
-        # TODO: a function to show or get the image. Need to know how the GUI works first
-        pass
-
     def get_link_id(self):
         return self.__link_id
 

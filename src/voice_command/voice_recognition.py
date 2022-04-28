@@ -20,6 +20,7 @@ TEXT_TO_NUMBER = {
     'five': 5,
 }
 
+
 def text_to_number(text, keyword):
     print(text)
     print(keyword)
@@ -29,6 +30,7 @@ def text_to_number(text, keyword):
 
 def get_number_from_text(text, keyword):
     return re.findall(r'%s(.+)' % keyword, text)[0].strip()
+
 
 class VoiceRecognition:
     def __init__(self):

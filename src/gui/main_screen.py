@@ -4,7 +4,7 @@ from tkinter import *
 
 from PIL import Image, ImageTk
 
-from connection_and_streaming.streamReciver import StreamVideoReciver
+from connection_and_streaming.stream_reciver import StreamVideoReciver
 from gui.waiting_page import WaitingPage
 from qr.qr_scanner import QrReader
 from gui.clock import Clock
@@ -13,7 +13,7 @@ from gui.news import News
 
 class Screen:
 
-    def __init__(self,cap,name):
+    def __init__(self, cap, name):
         # Gets the requested values of the height and width.
         self.root = tk.Tk()
         self.root.withdraw()
@@ -24,10 +24,10 @@ class Screen:
         self.qr_reader = None
         self.waiting_nr = 1
         self.img_path = r"../img/gallery_img.jpg"
-        self.abs_path = r"C:\Users\ingeb\Documents\universtiet\NTNU\tredje\var\Desgin\project_design\OfficePortal\src\img\gallery_img.jpg"
-        self.stream_video_reciver=None
-        self.cap=cap
-        self.officeName=name
+        self.abs_path = r"C:\repos\OfficePortal\src\img\gallery_img.jpg"
+        self.stream_video_reciver = None
+        self.cap = cap
+        self.officeName = name
 
     def configure_startup_screen(self) -> None:
         """
@@ -36,31 +36,29 @@ class Screen:
         :return: None
         """
         # The startup-screen.
-        # tk.NoDefaultRoot()  # may be redundant or may help clean up memory.
         startup_screen = tk.Tk()
         startup_screen.overrideredirect(True)
-
-        # startup_screen.wm_attributes("-transparent", True) #dette krasjer for windows
-
         startup_screen.title('Office Portal')
         startup_screen.configure(background='black')
-        # startup_screen.overrideredirect(True)
+
         # The welcome text
         welcome_text = tk.Label(startup_screen, font=('caviar dreams', 40), bg='black', fg='white')
         welcome_text.config(text='Hasta La Pasta')
         welcome_text.pack(side=LEFT, padx=120, pady=80)
+
         # Fetches the window size.
         window_width = startup_screen.winfo_reqwidth()
         window_height = startup_screen.winfo_reqheight()
-        # Wrongfully gets both half the screen width/height and window width/height
         position_right = int(startup_screen.winfo_screenwidth() / 2.5 - window_width / 2)
         position_down = int(startup_screen.winfo_screenheight() / 2 - window_height / 2)
 
         # Positions the window in the center of the page and updates the label.
         startup_screen.geometry("+{}+{}".format(position_right, position_down))
         startup_screen.update()
+
         # Waits two seconds for the loading screen.
         time.sleep(2)
+
         # Removes the startup screen.
         welcome_text.destroy()
         startup_screen.destroy()
@@ -81,13 +79,8 @@ class Screen:
         self.width = root.winfo_screenwidth()
         frame_container = self.create_grid_frame(root)
         self.frame_container = frame_container
-        # TODO: Remove from here. GUI controller should be responsible for this.
-        # self.create_start_page(frame_container)
         self.create_gallery_page()
-        self.stream_video_reciver=StreamVideoReciver(self.officeName)
-        # self.create_video_page()
-        # self.create_qr_page()
-        # self.create_waiting_page()
+        self.stream_video_reciver = StreamVideoReciver(self.officeName)
         self.show_frame("gallery_frame")
         return root
 
@@ -99,10 +92,12 @@ class Screen:
         """
         start_frame = tk.Frame(parent_frame, bg='black')
         start_frame.pack(expand=False, fill=BOTH, side=TOP, anchor=CENTER)
+
         # Creates the clock object on the main screen.
         clock = Clock(start_frame)
         clock.display_time()
         clock.display_date()
+
         # Creates the news object on the main screen.
         news_tab = News(start_frame)
         news_tab.show_news()
@@ -142,15 +137,13 @@ class Screen:
 
         canvas = Canvas(video_frame, bg='black', borderwidth=0)
         canvas.pack(fill=BOTH, expand=YES)
-        self.stream_video_reciver.set_canvas(canvas=canvas, height=self.height, width=self.width,gui_frame= video_frame)
+        self.stream_video_reciver.set_canvas(canvas=canvas, height=self.height, width=self.width, gui_frame=video_frame)
 
     def show_filter(self):
-        self.stream_video_reciver.set_is_showing(True) 
+        self.stream_video_reciver.set_is_showing(True)
 
     def hide_filter(self):
-        print("skjer dette?")
-        self.stream_video_reciver.set_is_showing(False) 
-        print(self.stream_video_reciver.showing)
+        self.stream_video_reciver.set_is_showing(False)
 
     def create_gallery_page(self):
         gallery_frame = tk.Frame(self.frame_container, bg='black')
@@ -188,7 +181,7 @@ class Screen:
             qr_frame = tk.Frame(self.frame_container, bg='black')
             self.frames['qr_frame'] = qr_frame
             qr_frame.grid(row=0, column=0, sticky="nsew")
-            self.qr_reader = QrReader(qr_frame, self.width, self.height, self.officeName,self.cap)
+            self.qr_reader = QrReader(qr_frame, self.width, self.height, self.officeName, self.cap)
 
             self.qr_reader.capture_video()
         else:
@@ -213,8 +206,6 @@ class Screen:
         frame.tkraise()
 
     def set_background_img(self):
-        # TODO: Emile?
-        # Add image file
         bg = PhotoImage(file="Your_img.png")
 
     def run(self) -> None:
@@ -227,8 +218,3 @@ class Screen:
         self.configure_startup_screen()
         root = self.create_main_screen()
         root.mainloop()
-
-
-if __name__ == '__main__':
-    app = Screen()
-    app.run()

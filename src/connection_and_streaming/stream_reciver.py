@@ -3,18 +3,12 @@ import logging
 import json
 from tkinter.constants import NW
 import tkinter as tk
-
-
-from threading import Thread
 import base64
-from turtle import Screen
-from matplotlib.pyplot import show
 import numpy as np
 import cv2
 from PIL import Image, ImageTk
 from mqtt_client import MqttClient
 from threading import Thread
-
 
 FPS = 30
 CHANNELS = 1
@@ -25,7 +19,7 @@ MQTT_PORT = 1883
 MQTT_TOPIC_RECIVER = "ttm4115/team_1/project/reciver"
 
 
-class StreamVideoReciver():
+class StreamVideoReciver:
     def on_connect(self, client, userdata, flagSs, rc):
         self._logger.debug("MQTT connected to {}".format(client))
 
@@ -39,27 +33,25 @@ class StreamVideoReciver():
 
     def on_message(self, client, userdata, msg):
         if msg.topic == 'ttm4115/team_1/project/reciver':
-            data =self.load_json(msg)
-            if data["command"] == "streamstart" and data["reciver"]== self.name:
-                self.recivefrom =data["answer"]
-                self.mqtt_client.subscribe("ttm4115/team_1/project/camera"+self.recivefrom[-1])
-                self.active =True
-            elif data["command"] == "streamstop" and data["reciver"]== self.name:
-                self.active =False  
-                self.mqtt_client.unsubscribe("ttm4115/team_1/project/camera"+self.recivefrom[-1])
-                self.recivefrom =None
-                self.framesaudio =[]
+            data = self.load_json(msg)
+            if data["command"] == "streamstart" and data["reciver"] == self.name:
+                self.recivefrom = data["answer"]
+                self.mqtt_client.subscribe("ttm4115/team_1/project/camera" + self.recivefrom[-1])
+                self.active = True
+            elif data["command"] == "streamstop" and data["reciver"] == self.name:
+                self.active = False
+                self.mqtt_client.unsubscribe("ttm4115/team_1/project/camera" + self.recivefrom[-1])
+                self.recivefrom = None
+                self.framesaudio = []
                 cv2.destroyAllWindows()
-        if self.recivefrom != None:
-            if msg.topic == "ttm4115/team_1/project/camera"+self.recivefrom[-1] :#and not_sleep
-                data =self.load_json(msg)
-                if data["command"] == "streamvideo" and data["reciver"]== self.name and self.active ==True:
-                    framevideo=self.bts_to_frame(data["answer"])
+        if self.recivefrom is not None:
+            if msg.topic == "ttm4115/team_1/project/camera" + self.recivefrom[-1]:
+                data = self.load_json(msg)
+                if data["command"] == "streamvideo" and data["reciver"] == self.name and self.active == True:
+                    framevideo = self.bts_to_frame(data["answer"])
 
                     self.frame = framevideo
                     self.start_stream()
-                    # cv2.imshow("webcam", framevideo)
-                    # cv2.waitKey(20)
 
     def bts_to_frame(self, b64_string):
         base64_bytes = b64_string.encode("utf-8")
@@ -73,7 +65,7 @@ class StreamVideoReciver():
         self.width = width
         self.gui_frame = gui_frame
 
-    def __init__(self,name):
+    def __init__(self, name):
 
         self.number = name[-1]
         self.name = "office" + str(self.number) + "reciver"
@@ -114,12 +106,6 @@ class StreamVideoReciver():
     def start(self):
         while True:
             time.sleep(0.001)
-            try:
-                pass
-                # if keyboard.is_pressed("Escape"):
-                #   break
-            except:
-                pass
 
     def start_stream(self):
         if not self.started_stream:
@@ -131,26 +117,18 @@ class StreamVideoReciver():
         self.image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)  # to RGB
         self.image = Image.fromarray(self.image)  # to PIL format
         self.image = ImageTk.PhotoImage(self.image)  # to ImageTk format
-        #print("is showing",self.main_screen.showing_filter)
+
         # Update image
         if self.showing:
             self.create_filter_page(self.gui_frame)
         else:
-            #print(self.filter_frame)
-            #print(self.filter_frame != None, "shalalalala")
-            if self.filter_frame != None:
-                #print("")
+            if self.filter_frame is not None:
                 self.filter_frame.destroy()
                 self.filter_frame = None
         self.canvas.create_image(0, 0, anchor=NW, image=self.image)
         self.canvas.after(10, self.show_stream)
 
     def create_filter_page(self, parent_frame: tk.Frame):
-        """
-        Temp filter frame.
-        :param root:
-        :return:
-        """
         filters = ['dog', 'glasses', 'easter', 'lofoten', 'vacation', ]
         if self.filter_frame is None:
             self.filter_frame = tk.Frame(parent_frame, bg='black')
@@ -159,22 +137,11 @@ class StreamVideoReciver():
 
             for index in range(len(filters)):
                 if current == filters[index]:
-                    button1 = tk.Label(self.filter_frame, text=filters[index], bg='grey', fg='white', font=("Helvetica", 40),
-                                        borderwidth=10, relief=tk.GROOVE, )
+                    button1 = tk.Label(self.filter_frame, text=filters[index], bg='grey', fg='white',
+                                       font=("Helvetica", 40),
+                                       borderwidth=10, relief=tk.GROOVE, )
                     button1.grid(row=0, column=index, padx=10, pady=10)
                 else:
-                    button1 = tk.Label(self.filter_frame, text=filters[index], bg='grey', fg='white', font=("Helvetica", 40))
+                    button1 = tk.Label(self.filter_frame, text=filters[index], bg='grey', fg='white',
+                                       font=("Helvetica", 40))
                     button1.grid(row=0, column=index, padx=10, pady=10)
-
-
-if __name__ == "__main__":
-    debug_level = logging.DEBUG
-    logger = logging.getLogger(__name__)
-    logger.setLevel(debug_level)
-    ch = logging.StreamHandler()
-    ch.setLevel(debug_level)
-    formatter = logging.Formatter('%(asctime)s - %(name)-12s - %(levelname)-8s - %(message)s')
-    ch.setFormatter(formatter)
-    logger.addHandler(ch)
-    t = StreamVideoReciver()
-

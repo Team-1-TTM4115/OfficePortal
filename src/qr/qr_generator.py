@@ -1,4 +1,7 @@
 import json
+from datetime import datetime
+from threading import Thread
+
 from invite_link import InviteLink
 from mqtt_client import MqttClient
 
@@ -37,11 +40,13 @@ class QrGenerator:
         found_qr = next((x for x in self.__generated_links if x.get_link_id() == link_id), None)
         if found_qr is not None:
             if found_qr.has_expired():
-                self.send_msg("QRscanexpired", self.__office_name, data["sender"], found_qr.get_link_id(), "ttm4115/team_1/project/QR")
+                self.send_msg("QRscanexpired", self.__office_name, data["sender"], found_qr.get_link_id(),
+                              "ttm4115/team_1/project/QR")
                 self.__on_expired(found_qr)
                 self.stop_loop()
             else:
-                self.send_msg("QRscansuccess", self.__office_name, data["sender"], found_qr.get_link_id(), "ttm4115/team_1/project/QR")
+                self.send_msg("QRscansuccess", self.__office_name, data["sender"], found_qr.get_link_id(),
+                              "ttm4115/team_1/project/QR")
                 self.__on_found(found_qr)
                 self.stop_loop()
 
@@ -69,3 +74,23 @@ class QrGenerator:
             print('Message sent to topic {} had no valid JSON. Message ignored. {}'.format(msg.topic, err))
             return
         return data
+
+
+if __name__ == "__main__":
+    def on_expired(found_qr):
+        print("This link has expired: " + found_qr.get_link_id())
+
+
+    def on_found(found_qr):
+        print("This link was found and valid: " + found_qr.get_link_id())
+
+
+    generator = QrGenerator(on_expired, on_found, "office8")
+    generator.generate_invite_link(datetime(2022, 10, 10))
+
+    t = Thread(generator.start_loop())
+    t.start()
+
+    # Keep program running
+    while True:
+        pass

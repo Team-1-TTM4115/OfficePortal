@@ -1,27 +1,20 @@
 from gui.main_screen import Screen
-#from gui.gui_controller import GuiController
 
 
 class GuiSTM:
     """
     This class is used to create a GUI for the STM.
-    # TODO: Sunde mekker en gui kontroller som kan kontrollere STM'en.
-    # TODO: Så vi trenger bare logikken til STM'en.
     """
 
-
-    def __init__(self,controller):
-        self.screen = Screen(controller.cap,controller.office_name)
+    def __init__(self, controller):
+        self.screen = Screen(controller.cap, controller.office_name)
         self.gui_controller = controller
-        #self.gui_controller = GuiController()
 
-        
     def send_err_msg(self, e_msg):
         self.gui_controller.send_err_msg(e_msg)
 
     def new_frame(self, frame=None):
         pass
-        #self.gui_controller.new_frame(frame)
 
     def enter_qr_scanner(self):
         self.gui_controller.enter_qr_scanner()
@@ -55,5 +48,3 @@ class GuiSTM:
 
     def start(self):
         self.gui_controller.start()
-
-

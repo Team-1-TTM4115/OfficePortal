@@ -52,7 +52,6 @@ class Clock:
         every second to update the current time.
         :return: None
         """
-        # TODO: maybe not necessary to check each second if its a new date?
         date = dt.datetime.now()
         self.date_frame.config(text=f"{date:%A, %B %d, %Y}")
         self.date_frame.after(1000, self.display_date)
