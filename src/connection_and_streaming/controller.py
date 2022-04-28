@@ -167,18 +167,23 @@ class ControllerLogic:
         self.component.listening_for_call = True
 
     def log_in_connected(self):
+        #This function exits for debuging 
         self._logger.info("state=connected")
 
     def log_in_not_connected(self):
+        #This function exits for debuging 
         self._logger.info("state=not_connected")
 
     def log_in_ready_for_qr_code(self):
+        #This function exits for debuging 
         self._logger.info("state=ready_for_qr_code")
 
     def log_in_waiting_for_partner(self):
+        #This function exits for debuging  
         self._logger.info("state=waiting_for_partner")
 
     def log_in_active_session(self):
+        #This function exits for debuging 
         self._logger.info("state=active_session")
 
     def turn_on_microphone(self):
