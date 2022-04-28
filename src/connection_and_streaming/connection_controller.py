@@ -14,9 +14,15 @@ MQTT_TOPIC_CONNECTION = "ttm4115/team_1/project/connectionController"
 
 class ConnectionControllerComponent:
     def on_connect(self, client, userdata, flags, rc):
+        """
+        Callback when connected to MQTT
+        """
         self._logger.debug("MQTT connected to {}".format(client))
 
     def find_connetion(self, office):
+        """
+        Finds out if a connection with another office is already present in the database
+        """
         filereader = open("database.txt", "r")
         for connections in filereader:
             connection1, connection2 = self.split_connections(connections)
@@ -30,9 +36,15 @@ class ConnectionControllerComponent:
         return None
 
     def split_connections(self, string):
+        """
+        Split string in database to use for comparison
+        """
         return string.split(";")[0], string.split(";")[1]
 
     def make_connection(self, office1, office2):
+        """
+        Save a connection between two offices in the database, overwriting existing connection
+        """
         filereader = open("database.txt", "r")
         connections_list = []
         for connections in filereader:
@@ -50,6 +62,9 @@ class ConnectionControllerComponent:
         filewriter.close()
 
     def make_new_connection(self, office1, office2):
+        """
+        Create an entirly new connection between two offices in the database
+        """
         filereader = open("database.txt", "r")
         connections_list = []
         for connections in filereader:
@@ -64,6 +79,9 @@ class ConnectionControllerComponent:
         filewriter.close()
 
     def load_json(self, msg):
+        """
+        Deserialize JSON message
+        """
         try:
             data = json.loads(msg.payload.decode("utf-8"))
         except Exception as err:
@@ -72,6 +90,9 @@ class ConnectionControllerComponent:
         return data
 
     def on_message(self, client, userdata, msg):
+        """
+        Callback when a message is recieved through MQTT
+        """
         if msg.topic == "ttm4115/team_1/project/connectionController":
             data = self.load_json(msg)
             if data["command"] == "who am I connected to?":
@@ -115,9 +136,15 @@ class ConnectionControllerComponent:
                 print(self._logger.info("Multi-step hotkeys were pressed"))
 
     def send_answer(self, msg, reciver, answer):
+        """
+        Function for publishing a message through MQTT
+        """
         self.send_msg(msg, self.name, reciver, answer)
 
     def send_msg(self, msg, sender, reciver, answer):
+        """
+        Serialize params into a JSON string and publish to MQTT
+        """
         command = {"command": msg, "sender": sender, "reciver": reciver, "answer": answer}
         payload = json.dumps(command)
         self.mqtt_client.publish(MQTT_TOPIC_CONNECTION, payload)
