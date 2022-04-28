@@ -1,8 +1,3 @@
-from concurrent.futures import process
-import multiprocessing
-
-from multiprocessing import Process
-from threading import Thread
 import stmpy
 
 from .voice_recognition import VoiceRecognition, text_to_number
