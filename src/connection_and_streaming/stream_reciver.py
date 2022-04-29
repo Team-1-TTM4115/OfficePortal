@@ -20,6 +20,38 @@ MQTT_TOPIC_RECIVER = "ttm4115/team_1/project/reciver"
 
 
 class StreamVideoReciver:
+    def __init__(self, name):
+
+        self.number = name[-1]
+        self.name = "office" + str(self.number) + "reciver"
+        self.active = False
+        self.framesaudio = []
+        self.recivefrom = None
+
+        # get sthe logger object for the component
+        self._logger = logging.getLogger(__name__)
+        print("logging under name {}.".format(__name__))
+        self._logger.info("Starting Component")
+
+        # create a new MQTT client
+        self._logger.debug("Connecting to MQTT broker {} at port {}".format(MQTT_BROKER, MQTT_PORT))
+        self.mqtt_client = MqttClient("StreamReciver" + self.name)
+        self.mqtt_client.on_connect = self.on_connect
+        self.mqtt_client.on_message = self.on_message
+        self.mqtt_client.connect(MQTT_BROKER, MQTT_PORT)
+        self.mqtt_client.subscribe(MQTT_TOPIC_RECIVER)
+        t1 = Thread(target=self.mqtt_client.loop_start())
+        t1.start()
+
+        # for tkinter
+        self.frame = None
+        self.started_stream = False
+        self.canvas = None
+        self.filter_frame = None
+        self.height = None
+        self.width = None
+        self.showing = False
+
     def on_connect(self, client, userdata, flagSs, rc):
         """
         Callback when connected to MQTT
@@ -80,40 +112,7 @@ class StreamVideoReciver:
         self.width = width
         self.gui_frame = gui_frame
 
-    def __init__(self, name):
-
-        self.number = name[-1]
-        self.name = "office" + str(self.number) + "reciver"
-        self.active = False
-        self.framesaudio = []
-        self.recivefrom = None
-
-        # get sthe logger object for the component
-        self._logger = logging.getLogger(__name__)
-        print("logging under name {}.".format(__name__))
-        self._logger.info("Starting Component")
-
-        # create a new MQTT client
-        self._logger.debug("Connecting to MQTT broker {} at port {}".format(MQTT_BROKER, MQTT_PORT))
-        self.mqtt_client = MqttClient("StreamReciver" + self.name)
-        self.mqtt_client.on_connect = self.on_connect
-        self.mqtt_client.on_message = self.on_message
-        self.mqtt_client.connect(MQTT_BROKER, MQTT_PORT)
-        self.mqtt_client.subscribe(MQTT_TOPIC_RECIVER)
-        t1 = Thread(target=self.mqtt_client.loop_start())
-        t1.start()
-
-        # t2 = Thread(target=self.start())
-        # t2.start()
-
-        # for tkinter
-        self.frame = None
-        self.started_stream = False
-        self.canvas = None
-        self.filter_frame = None
-        self.height = None
-        self.width = None
-        self.showing = False
+    
 
     def set_is_showing(self, is_showing):
         """

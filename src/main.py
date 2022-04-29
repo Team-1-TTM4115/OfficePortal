@@ -19,7 +19,7 @@ if __name__ == "__main__":
 
     stream_audio_reciver_component = StreamAudioReciver(office_name)
 
-    connection_controller = ControllerComponent(office_name)
+    raspberry_pi_controller = ControllerComponent(office_name)
 
     gui_controller = GuiController(cap, office_name)
     gui_controller.initialize_stm()
@@ -27,12 +27,12 @@ if __name__ == "__main__":
     driver = stmpy.Driver()
 
     driver.add_machine(voice_cmd_component.stm)
-    driver.add_machine(connection_controller.stm)
+    driver.add_machine(raspberry_pi_controller.stm)
     driver.add_machine(gui_controller.stm)
     driver.add_machine(stream_video_component.stm)
     driver.add_machine(stream_audio_reciver_component.stm)
 
-    connection_controller.stm_driver = driver
+    raspberry_pi_controller.stm_driver = driver
     voice_cmd_component.stm_driver = driver
     gui_controller.stm_driver = driver
     stream_audio_reciver_component.stm_driver = driver

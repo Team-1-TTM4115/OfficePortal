@@ -15,9 +15,6 @@ MQTT_BROKER = "mqtt.item.ntnu.no"
 MQTT_PORT = 1883
 FPS = 20
 
-MQTT_TOPIC_SENSOR = 'ttm4115/team_1/project/sensor'
-
-
 class StreamCapLogic:
     def __init__(self, name, component):
         self._logger = logging.getLogger(__name__)
@@ -174,13 +171,9 @@ class StreamVideo:
         self.mqtt_client.on_connect = self.on_connect
         self.mqtt_client.on_message = self.on_message
         self.mqtt_client.connect(MQTT_BROKER, MQTT_PORT)
-        # self.mqtt_client.subscribe("ttm4115/team_1/project/camera"+str(self.number))
-        # self.mqtt_client.subscribe("ttm4115/team_1/project/QR"+str(self.number))
-        # self.mqtt_client.subscribe(MQTT_TOPIC_SENSOR)
-        # thread = Thread(target=self.mqtt_client.loop_start())
-        # thread.start()
 
-        self.cap = cap  # Camera(0,cv2.CAP_DSHOW)
+
+        self.cap = cap  
         self.segmentor = SelfiSegmentation()
         self.listImg = os.listdir(r"C:\repos\OfficePortal\src\connection_and_streaming\background_filters")
         listImg = os.listdir(r"C:\repos\OfficePortal\src\connection_and_streaming\background_filters")
@@ -212,45 +205,7 @@ class StreamVideo:
         return data
 
     def on_message(self, client, userdata, msg):
-        if msg.topic == 'ttm4115/team_1/project/camera' + str(self.number):
-            data = self.load_json(msg)
-            if data["command"] == "streamstart" and data["reciver"] == self.name + "camera":
-                self.video_on = True
-                self.send_to = data["answer"]
-                self.stm_driver.send("vidoe_capture_on", "streamvideo")
-            elif data["command"] == "streamstop" and data["reciver"] == self.name + "camera":
-                self.video_on = False
-                self.filter = None
-                self.background = None
-                if not self.sensor_on:
-                    self.stm_driver.send("vidoe_capture_off", "streamvideo")
-            elif data["command"] == "fliter_on" and data["reciver"] == self.name + "camera":
-                self.filter = data["answer"]
-            elif data["command"] == "fliter_off" and data["reciver"] == self.name + "camera":
-                self.filter = None
-            elif data["command"] == "backgorund_on" and data["reciver"] == self.name + "camera":
-                self.background = data["answer"]
-                if self.background == "easter":
-                    self.indexImg = 0
-                elif self.background == "lofoten":
-                    self.indexImg = 1
-                elif self.background == "vacay":
-                    self.indexImg = 2
-            elif data["command"] == "backgorund_off" and data["reciver"] == self.name + "camera":
-                self.background = None
-        elif msg.topic == 'ttm4115/team_1/project/sensor':
-            data = self.load_json(msg)
-            if not self.sensor_on and data["reciver"] == self.name + "sensor":
-                if data["command"] == "start":
-                    self.office = data["sender"]
-                    self.sensor_on = True
-                    self.stm_driver.send("turn_sensor_on", "streamvideo")
-            if self.sensor_on and (data["reciver"] == self.name + "sensor") and (
-                    (data["sender"] == self.office)):
-                if data["command"] == "stop":
-                    self.sensor_on = False
-                    if not self.video_on:
-                        self.stm_driver.send("turn_sensor_off", "streamvideo")
+       pass
 
     def bts_to_frame(self, b64_string):
         base64_bytes = b64_string.encode("utf-8")
@@ -261,7 +216,6 @@ class StreamVideo:
     def put_dog_filter(self, dog, fc, x, y, w, h):
         face_width = w
         face_height = h
-        # resizing the pictures/filters to fit the face properties
         dog = cv2.resize(dog, (int(face_width * 1.5), int(face_height * 1.95)))
         for i in range(int(face_height * 1.75)):
             for j in range(int(face_width * 1.5)):
@@ -311,28 +265,8 @@ class StreamVideo:
         self.sensor(frame, self.framelast)
         self.framelast = frame
 
-    def start(self, cap):
-        while True:
-            while self.video_on or self.sensor_on:
-                _, frame = cap.read()
-                if self.video_on:
-                    self.send_video(frame)
-                if self.QR_on:
-                    b64_string = self.frame_to_string(frame)
-                    self.send_msg("QR", self.name + "QR", "office" + str(self.number), None, b64_string,
-                                  "ttm4115/team_1/project/QR" + str(self.number))
-                if self.sensor_on and (time.time()) > 5:  # kansje øk med mer
-                    self.sensor(frame, self.framelast)
-
-                self.framelast = frame
-
-        self.mqtt_client.loop_stop()
-        cap.release()
-        cv2.destroyAllWindows()
-
     def send_video(self, frame):
         if self.filter is not None:
-            # frame = cv2.flip(frame, 1, 0)
             gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
             fl = self.face.detectMultiScale(gray, 1.19, 7)
             for (x, y, w, h) in fl:

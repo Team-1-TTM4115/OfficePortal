@@ -13,71 +13,9 @@ RATE = 44100
 
 MQTT_BROKER = "mqtt.item.ntnu.no"
 MQTT_PORT = 1883
-MQTT_TOPIC_AUDIO = "ttm4115/team_1/project/audio"
-MQTT_TOPIC_CAMERA = "ttm4115/team_1/project/camera"
-
-
-class StreamAudioLogic:
-    def __init__(self, name, component):
-        self._logger = logging.getLogger(__name__)
-        self.name = name
-        self.id = name
-        self.component = component
-
-        t0 = {
-            "source": "initial",
-            "target": "off",
-        }
-
-        t1 = {
-            "trigger": "turn_audio_on",
-            "source": "off",
-            "target": "on",
-            "effect": "start_timer('adiuo_timer', 45); audio_on",
-        }
-        t2 = {
-            "trigger": "turn_audio_off",
-            "source": "on",
-            "target": "off",
-        }
-
-        on = {"name": "on",
-              "audio_timer": "start_timer('sensor_timer', 45); check_movement", }
-
-    def audio_on(self):
-        self.component.audio_on()
 
 
 class StreamAudio():
-    def on_connect(self, client, userdata, flags, rc):
-        """
-        Callback when connecting to MQTT
-        """
-        self._logger.debug("MQTT connected to {}".format(client))
-
-    def load_json(self, msg):
-        """
-        Deserialize JSON string
-        """
-        try:
-            data = json.loads(msg.payload.decode("utf-8"))
-        except Exception as err:
-            self._logger.error('Message sent to topic {} had no valid JSON. Message ignored. {}'.format(msg.topic, err))
-            return
-        return data
-
-    def on_message(self, client, userdata, msg):
-        """
-        Callback when recieving message to subscribed topic through MQTT
-        """
-        if msg.topic == "ttm4115/team_1/project/audio" + str(self.number):
-            data = self.load_json(msg)
-            if data["command"] == "streamstart" and data["reciver"] == self.name + "audio":
-                self.active = True
-                self.sendTo = data["answer"]
-            elif data["command"] == "streamstop" and data["reciver"] == self.name + "audio":
-                self.active = False
-
     def __init__(self):
         self.number = 8
         self.name = "office" + str(self.number)
@@ -118,8 +56,34 @@ class StreamAudio():
         stream.close()
         p.terminate()
 
-    def audio_on(self):
-        pass
+    def on_connect(self, client, userdata, flags, rc):
+        """
+        Callback when connecting to MQTT
+        """
+        self._logger.debug("MQTT connected to {}".format(client))
+
+    def load_json(self, msg):
+        """
+        Deserialize JSON string
+        """
+        try:
+            data = json.loads(msg.payload.decode("utf-8"))
+        except Exception as err:
+            self._logger.error('Message sent to topic {} had no valid JSON. Message ignored. {}'.format(msg.topic, err))
+            return
+        return data
+
+    def on_message(self, client, userdata, msg):
+        """
+        Callback when recieving message to subscribed topic through MQTT
+        """
+        if msg.topic == "ttm4115/team_1/project/audio" + str(self.number):
+            data = self.load_json(msg)
+            if data["command"] == "streamstart" and data["reciver"] == self.name + "audio":
+                self.active = True
+                self.sendTo = data["answer"]
+            elif data["command"] == "streamstop" and data["reciver"] == self.name + "audio":
+                self.active = False
 
     def send_msg(self, msg, sender, reciver, timestamp, answer, where):
         """

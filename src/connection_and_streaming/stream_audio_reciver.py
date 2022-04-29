@@ -147,6 +147,3 @@ class StreamAudioReciver:
                     self.stm_driver.send("play_frame", "streamaudio",
                                          kwargs={"frame": data["answer"].encode("ISO-8859-1")})
 
-    def start(self):
-        while True:
-            time.sleep(0.001)

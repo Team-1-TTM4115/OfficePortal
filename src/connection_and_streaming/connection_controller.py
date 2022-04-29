@@ -13,6 +13,29 @@ MQTT_TOPIC_CONNECTION = "ttm4115/team_1/project/connectionController"
 
 
 class ConnectionControllerComponent:
+    def __init__(self):
+        self.name = "connectionController"
+
+        # get the logger object for the component
+        self._logger = logging.getLogger(__name__)
+        print("logging under name {}.".format(__name__))
+        self._logger.info("Starting Component")
+
+        # create a new MQTT client
+        self._logger.debug("Connecting to MQTT broker {} at port {}".format(MQTT_BROKER, MQTT_PORT))
+        self.mqtt_client = MqttClient(self.name)
+        self.mqtt_client.on_connect = self.on_connect
+        self.mqtt_client.on_message = self.on_message
+        self.mqtt_client.connect(MQTT_BROKER, MQTT_PORT)
+        self.mqtt_client.subscribe(MQTT_TOPIC_CONNECTION)
+        self.mqtt_client.loop_start()
+        while True:
+            try:
+                if keyboard.is_pressed("Escape"):
+                    break
+            except ValueError:
+                print(self._logger.info("Multi-step hotkeys were pressed"))
+
     def on_connect(self, client, userdata, flags, rc):
         """
         Callback when connected to MQTT
@@ -111,29 +134,6 @@ class ConnectionControllerComponent:
             elif data["command"] == "left connection":
                 if data["reciver"] == "connectionController":
                     self.send_answer("left connection", data["answer"], data["sender"])
-
-    def __init__(self):
-        self.name = "connectionController"
-
-        # get the logger object for the component
-        self._logger = logging.getLogger(__name__)
-        print("logging under name {}.".format(__name__))
-        self._logger.info("Starting Component")
-
-        # create a new MQTT client
-        self._logger.debug("Connecting to MQTT broker {} at port {}".format(MQTT_BROKER, MQTT_PORT))
-        self.mqtt_client = MqttClient(self.name)
-        self.mqtt_client.on_connect = self.on_connect
-        self.mqtt_client.on_message = self.on_message
-        self.mqtt_client.connect(MQTT_BROKER, MQTT_PORT)
-        self.mqtt_client.subscribe(MQTT_TOPIC_CONNECTION)
-        self.mqtt_client.loop_start()
-        while True:
-            try:
-                if keyboard.is_pressed("Escape"):
-                    break
-            except ValueError:
-                print(self._logger.info("Multi-step hotkeys were pressed"))
 
     def send_answer(self, msg, reciver, answer):
         """
