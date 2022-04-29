@@ -147,10 +147,11 @@ class ControllerLogic:
                                  obj=self, states=[active_session, connected, waiting_for_partner, not_connected])
 
     def check_connection(self):
+        """
+        Check if the state is equal to connected
+        """
         self.component.check_connection()
         time.sleep(0.5)
-        # ke skjer hvis connectioncontroller går på etter dette og
-        # den hadde en connection(dette skal ikke skje med korrect bruk)
         if self.component.connection is None:
             self._logger.info("state=not_connected")
             self.start_listening()
@@ -294,9 +295,15 @@ class ControllerComponent:
         self.stm = controller.stm
 
     def on_connect(self, client, userdata, flags, rc):
+        """
+        Callback when connected to MQTT
+        """
         self._logger.debug('MQTT connected to {}'.format(client))
 
     def load_json(self, msg):
+        """
+        Deserialize JSON message
+        """
         try:
             data = json.loads(msg.payload.decode("utf-8"))
         except Exception as err:
@@ -305,6 +312,9 @@ class ControllerComponent:
         return data
 
     def on_message(self, client, userdata, msg):
+        """
+        Callback when a message is recieved through MQTT
+        """
         if msg.topic == "ttm4115/team_1/project/sensor":
             data = self.load_json(msg)
             if data["sender"] == self.sensor and data["command"] == "movement":
@@ -339,70 +349,80 @@ class ControllerComponent:
                 self.stm_driver.send("partner_idle", "Controller")
 
     def stop(self):
-        # stop the state machine Driver and MQTT
-        # self.stm_driver.stop()
+        """
+        Stop listening to MQTT messages
+        :return:
+        """
         self.mqtt_client.loop_stop()
 
     def send_change_connection(self):
+        """
+        Send MQTT message to connectionController topic to change connection
+        """
         self.send_msg("change connetion", self.officeName, "connectionController", self.connection,
                       MQTT_TOPIC_CONNECTION)
 
     def check_connection(self):
+        """
+        Send MQTT message to connectionController topic to check who this office is connected to
+        """
         self.send_msg("who am I connected to?", self.officeName, "connectionController", None, MQTT_TOPIC_CONNECTION)
 
     def send_left_connection(self):
+        """
+        Send MQTT message to connectionController topic when leaving a connection
+        """
         self.send_msg("left connection", self.officeName, "connectionController", self.connection,
                       MQTT_TOPIC_CONNECTION)
 
     def send_partner_active(self):
+        """
+        Send MQTT message to connectionController topic to check if partner is active
+        """
         self.send_msg("partner active", self.officeName, self.connection, "first", MQTT_TOPIC_CONTROLLER)
 
     def send_I_am_idle(self):
+        """
+        Send MQTT message to connectionController topic to tell partner that this office is now idle
+        """
         self.send_msg("I am idle", self.officeName, self.connection, None, MQTT_TOPIC_CONTROLLER)
 
     def sensor_on(self):
         self.stm_driver.send("turn_sensor_on", "streamvideo")
-        # hva skjer hvis sensor ikke er på så den ikke blir skrudd på!!?
-        # self.send_msg("start",self.officeName,self.sensor,None,MQTT_TOPIC_SENSOR)
-        print("sensor_on")
 
     def send_msg(self, msg, sender, reciver, answer, where):
+        """
+        Serialize into JSON string and publish on topic
+        :param where: Topic to publish on
+        """
         command = {"command": msg, "sender": sender, "reciver": reciver, "answer": answer}
         payload = json.dumps(command)
         self.mqtt_client.publish(where, payload)
 
     def sensor_off(self):
-        # self.send_msg("stop",self.officeName,self.sensor,None,MQTT_TOPIC_SENSOR)
         self.stm_driver.send("turn_sensor_off", "streamvideo")
-        print("sensor_off")
 
     def vidoe_capture_off(self):
         self.stm_driver.send("turn_filter_off", "streamvideo")
         self.stm_driver.send("turn_background_off", "streamvideo")
         self.stm_driver.send("vidoe_capture_off", "streamvideo")
-        print("turn_camera_off")
 
     def vidoe_capture_on(self):
         self.stm_driver.send("vidoe_capture_on", "streamvideo", kwargs={"send_to": self.connection + "reciver"})
-        print("turn_on_camera")
 
     def turn_on_reciver(self):
         self.send_msg("streamstart", "Controller", self.officeName + "reciver", self.connection, MQTT_TOPIC_RECIVER)
-        print("turn_on_reciver")
 
     def turn_reciver_off(self):
         self.send_msg("streamstop", "Controller", self.officeName + "reciver", self.connection, MQTT_TOPIC_RECIVER)
-        print("turn_reciver_off")
 
     def turn_on_microphone(self):
         self.send_msg("streamstart", "Controller", self.officeName + "audio", self.connection + "reciver",
                       "ttm4115/team_1/project/audio" + self.officeName[-1])
-        print("turn_on_reciver")
 
     def turn_microphone_off(self):
         self.send_msg("streamstop", "Controller", self.officeName + "audio", self.connection + "reciver",
                       "ttm4115/team_1/project/audio" + self.officeName[-1])
-        print("turn_reciver_off")
 
     def enter_gallery_mode(self):
         self.stm_driver.send("enter_gallery_mode", "gui_stm")
@@ -423,12 +443,18 @@ class ControllerComponent:
         self.stm_driver.send("stop_listening", "voice_stm")
 
     def trigger_change(self, command):
+        """
+        Check incoming voice command if it should open or close window
+        """
         if command == "open menu":
             self.stm_driver.send("open_menu", "gui_stm")
         elif command == "close menu":
             self.stm_driver.send("close_menu", "gui_stm")
 
     def apply_filter(self, command):
+        """
+        Check incoming voice command if it should add a face filter or background filter
+        """
         if command[0] == "background number":
             if command[1] == 1:
                 effect = "easter"

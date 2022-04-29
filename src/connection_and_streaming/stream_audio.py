@@ -18,7 +18,6 @@ MQTT_TOPIC_CAMERA = "ttm4115/team_1/project/camera"
 
 
 class StreamAudioLogic:
-
     def __init__(self, name, component):
         self._logger = logging.getLogger(__name__)
         self.name = name
@@ -51,9 +50,15 @@ class StreamAudioLogic:
 
 class StreamAudio():
     def on_connect(self, client, userdata, flags, rc):
+        """
+        Callback when connecting to MQTT
+        """
         self._logger.debug("MQTT connected to {}".format(client))
 
     def load_json(self, msg):
+        """
+        Deserialize JSON string
+        """
         try:
             data = json.loads(msg.payload.decode("utf-8"))
         except Exception as err:
@@ -62,6 +67,9 @@ class StreamAudio():
         return data
 
     def on_message(self, client, userdata, msg):
+        """
+        Callback when recieving message to subscribed topic through MQTT
+        """
         if msg.topic == "ttm4115/team_1/project/audio" + str(self.number):
             data = self.load_json(msg)
             if data["command"] == "streamstart" and data["reciver"] == self.name + "audio":
@@ -114,6 +122,10 @@ class StreamAudio():
         pass
 
     def send_msg(self, msg, sender, reciver, timestamp, answer, where):
+        """
+        Serialize into JSON string and publish to MQTT topic
+        :param where: Topic to publish to
+        """
         command = {"command": msg, "sender": sender, "reciver": reciver, "time": timestamp, "answer": answer}
         payload = json.dumps(command)
         self.mqtt_client.publish(where, payload)

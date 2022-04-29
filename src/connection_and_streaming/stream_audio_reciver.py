@@ -89,21 +89,15 @@ class StreamAudioReciver:
         self.stm = controller.stm
 
     def on_connect(self, client, userdata, flags, rc):
+        """
+        Callback when connected to MQTT
+        """
         self._logger.debug("MQTT connected to {}".format(client))
 
-    def callback(self, in_data, frame_count, time_info, status):
-        data = None
-        if len(self.framesaudio) != 0:
-            data = self.framesaudio.pop(0)
-        else:
-            while len(self.framesaudio) == 0:
-                time.sleep(0.01)
-                if len(self.framesaudio) != 0:
-                    data = self.framesaudio.pop(0)
-                    break
-        return data, pyaudio.paContinue
-
     def play_audio(self, frame):
+        """
+        Write frame to audio stream
+        """
         self.stream.write(frame, num_frames=2048)
 
     def start_audio(self):
@@ -114,10 +108,17 @@ class StreamAudioReciver:
                                   output=True, )
 
     def stop_audio(self):
+        """
+        Stop and terminate audio stream
+        :return:
+        """
         self.stream.close()
         self.p.terminate()
 
     def load_json(self, msg):
+        """
+        Deserialize JSON string
+        """
         try:
             data = json.loads(msg.payload.decode("utf-8"))
         except Exception as err:
@@ -126,6 +127,9 @@ class StreamAudioReciver:
         return data
 
     def on_message(self, client, userdata, msg):
+        """
+        Callback when recieving a message on subscribed topic through MQTT
+        """
         if msg.topic == 'ttm4115/team_1/project/reciver':
             data = self.load_json(msg)
             if data["command"] == "streamstart" and data["reciver"] == self.name:

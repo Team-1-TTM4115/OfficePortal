@@ -21,9 +21,15 @@ MQTT_TOPIC_RECIVER = "ttm4115/team_1/project/reciver"
 
 class StreamVideoReciver:
     def on_connect(self, client, userdata, flagSs, rc):
+        """
+        Callback when connected to MQTT
+        """
         self._logger.debug("MQTT connected to {}".format(client))
 
     def load_json(self, msg):
+        """
+        Deserialize JSON string
+        """
         try:
             data = json.loads(msg.payload.decode("utf-8"))
         except Exception as err:
@@ -32,6 +38,9 @@ class StreamVideoReciver:
         return data
 
     def on_message(self, client, userdata, msg):
+        """
+        Callback when recieving message on subscribed topic through MQTT
+        """
         if msg.topic == 'ttm4115/team_1/project/reciver':
             data = self.load_json(msg)
             if data["command"] == "streamstart" and data["reciver"] == self.name:
@@ -54,12 +63,18 @@ class StreamVideoReciver:
                     self.start_stream()
 
     def bts_to_frame(self, b64_string):
+        """
+        Converting Base 64 string to image frame
+        """
         base64_bytes = b64_string.encode("utf-8")
         buff = np.frombuffer(base64.b64decode(base64_bytes), np.uint8)
         img = cv2.imdecode(buff, cv2.IMREAD_COLOR)
         return img
 
     def set_canvas(self, canvas, height, width, gui_frame):
+        """
+        Set the canvas, and the height and width
+        """
         self.canvas = canvas
         self.height = height
         self.width = width
@@ -101,6 +116,9 @@ class StreamVideoReciver:
         self.showing = False
 
     def set_is_showing(self, is_showing):
+        """
+        Function for setting menu is showing
+        """
         self.showing = is_showing
 
     def start(self):
@@ -108,11 +126,17 @@ class StreamVideoReciver:
             time.sleep(0.001)
 
     def start_stream(self):
+        """
+        Start the video stream
+        """
         if not self.started_stream:
             self.started_stream = True
             self.show_stream()
 
     def show_stream(self):
+        """
+        Show the stream to the screen
+        """
         frame = cv2.resize(self.frame, (self.width, self.height))
         self.image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)  # to RGB
         self.image = Image.fromarray(self.image)  # to PIL format
@@ -129,6 +153,9 @@ class StreamVideoReciver:
         self.canvas.after(10, self.show_stream)
 
     def create_filter_page(self, parent_frame: tk.Frame):
+        """
+        Initializes the filter page
+        """
         filters = ['dog', 'glasses', 'easter', 'lofoten', 'vacation', ]
         if self.filter_frame is None:
             self.filter_frame = tk.Frame(parent_frame, bg='black')
