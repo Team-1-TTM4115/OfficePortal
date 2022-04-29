@@ -43,7 +43,7 @@ class StreamAudioLogic:
         }
 
         on = {"name": "on",
-              "play_frame": "play_audio(*)", }
+              "received_frame": "play_audio(*)", }
 
         self.stm = stmpy.Machine(name=name,
                                  transitions=[t0, t1, t2],
@@ -144,6 +144,6 @@ class StreamAudioReciver:
             if msg.topic == "ttm4115/team_1/project/audio" + self.recivefrom[-1]:
                 data = self.load_json(msg)
                 if data["command"] == "streamaudio" and data["reciver"] == self.name:
-                    self.stm_driver.send("play_frame", "streamaudio",
+                    self.stm_driver.send("received_frame", "streamaudio",
                                          kwargs={"frame": data["answer"].encode("ISO-8859-1")})
 
