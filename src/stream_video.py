@@ -15,6 +15,7 @@ MQTT_BROKER = "mqtt.item.ntnu.no"
 MQTT_PORT = 1883
 FPS = 20
 
+
 class StreamCapLogic:
     def __init__(self, name, component):
         self._logger = logging.getLogger(__name__)
@@ -142,7 +143,7 @@ class StreamCapLogic:
 class StreamVideo:
     def __init__(self, cap, name):
         self.number = name[-1]
-        self.name = name  # "office"+str(self.number)
+        self.name = name
         self.send_to = None
         self.active = False
         self.on = True
@@ -169,11 +170,9 @@ class StreamVideo:
         self._logger.debug("Connecting to MQTT broker {} at port {}".format(MQTT_BROKER, MQTT_PORT))
         self.mqtt_client = MqttClient("StreamVideo" + self.name)
         self.mqtt_client.on_connect = self.on_connect
-        self.mqtt_client.on_message = self.on_message
         self.mqtt_client.connect(MQTT_BROKER, MQTT_PORT)
 
-
-        self.cap = cap  
+        self.cap = cap
         self.segmentor = SelfiSegmentation()
         self.listImg = os.listdir(r"C:\repos\OfficePortal\src\connection_and_streaming\background_filters")
         listImg = os.listdir(r"C:\repos\OfficePortal\src\connection_and_streaming\background_filters")
@@ -194,9 +193,15 @@ class StreamVideo:
         self.stm = controller.stm
 
     def on_connect(self, client, userdata, flags, rc):
+        """
+        Callback when connected to MQTT
+        """
         self._logger.debug("MQTT connected to {}".format(client))
 
     def load_json(self, msg):
+        """
+        Deserialize JSON message
+        """
         try:
             data = json.loads(msg.payload.decode("utf-8"))
         except Exception as err:
@@ -204,16 +209,19 @@ class StreamVideo:
             return
         return data
 
-    def on_message(self, client, userdata, msg):
-       pass
-
     def bts_to_frame(self, b64_string):
+        """
+        Converting Base 64 string to image frame
+        """
         base64_bytes = b64_string.encode("utf-8")
         buff = np.frombuffer(base64.b64decode(base64_bytes), np.uint8)
         img = cv2.imdecode(buff, cv2.IMREAD_COLOR)
         return img
 
     def put_dog_filter(self, dog, fc, x, y, w, h):
+        """
+        Apply dog filter at given coordinates
+        """
         face_width = w
         face_height = h
         dog = cv2.resize(dog, (int(face_width * 1.5), int(face_height * 1.95)))
@@ -225,6 +233,9 @@ class StreamVideo:
         return fc
 
     def put_hat(self, hat, fc, x, y, w, h):
+        """
+        Apply hat filter at given coordinates
+        """
         face_width = w
         face_height = h
 
@@ -241,6 +252,9 @@ class StreamVideo:
         return fc
 
     def put_glass(self, glass, fc, x, y, w, h):
+        """
+        Apply glasses filter at given coordinates
+        """
         face_width = w
         face_height = h
 
@@ -261,11 +275,17 @@ class StreamVideo:
         self.send_video(frame)
 
     def check_movement(self):
+        """
+        Uses the camera to check for movement
+        """
         _, frame = self.cap.read()
         self.sensor(frame, self.framelast)
         self.framelast = frame
 
     def send_video(self, frame):
+        """
+        Send video with the modified frame
+        """
         if self.filter is not None:
             gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
             fl = self.face.detectMultiScale(gray, 1.19, 7)
@@ -290,12 +310,20 @@ class StreamVideo:
                       "ttm4115/team_1/project/camera" + str(self.number))
 
     def frame_to_string(self, frame):
+        """
+        Converts frame to a Base64 String
+        :param frame: The frame to convert
+        :return:
+        """
         image_bytes = cv2.imencode('.jpg', frame)[1]
         b64_bytes = base64.b64encode(image_bytes)
         b64_string = b64_bytes.decode("utf-8")
         return b64_string
 
     def sensor(self, frame1, frame2):
+        """
+        Sensor functionality to find movement and send movement detection message
+        """
         diff = cv2.absdiff(frame1, frame2)
         gray = cv2.cvtColor(diff, cv2.COLOR_BGR2GRAY)
         blur = cv2.GaussianBlur(gray, (5, 5), 0)
@@ -311,6 +339,10 @@ class StreamVideo:
             self.stm_driver.send("movement_detected", "Controller")
 
     def send_msg(self, msg, sender, reciver, timestamp, answer, where):
+        """
+        Serialize into JSON string and publish on topic
+        :param where: Topic to publish on
+        """
         command = {"command": msg, "sender": sender, "reciver": reciver, "time": timestamp, "answer": answer}
         payload = json.dumps(command)
         self.mqtt_client.publish(where, payload)
